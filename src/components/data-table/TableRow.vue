@@ -1,5 +1,5 @@
 <template>
-  <tr class="border-b hover:bg-gray-50">
+  <tr class="border-b border-b-gray-300 hover:bg-gray-50">
     <td class="py-3 px-4">1</td>
     <td class="py-3 px-4">DOC-001</td>
     <td class="py-3 px-4">Project Proposal</td>
@@ -14,7 +14,7 @@
       </button>
     </td>
   </tr>
-  <tr class="border-b hover:bg-gray-50">
+  <tr class="border-b border-b-gray-300 hover:bg-gray-50">
     <td class="py-3 px-4">1</td>
     <td class="py-3 px-4">DOC-001</td>
     <td class="py-3 px-4">Project Proposal</td>
@@ -29,7 +29,7 @@
       </button>
     </td>
   </tr>
-  <tr class="border-b hover:bg-gray-50">
+  <tr class="border-b border-b-gray-300 hover:bg-gray-50">
     <td class="py-3 px-4">1</td>
     <td class="py-3 px-4">DOC-001</td>
     <td class="py-3 px-4">Project Proposal</td>
@@ -44,7 +44,7 @@
       </button>
     </td>
   </tr>
-  <tr class="border-b hover:bg-gray-50">
+  <tr class="border-b border-b-gray-300 hover:bg-gray-50">
     <td class="py-3 px-4">1</td>
     <td class="py-3 px-4">DOC-001</td>
     <td class="py-3 px-4">Project Proposal</td>
@@ -59,7 +59,7 @@
       </button>
     </td>
   </tr>
-  <tr class="border-b hover:bg-gray-50">
+  <tr class="border-b border-b-gray-300 hover:bg-gray-50">
     <td class="py-3 px-4">1</td>
     <td class="py-3 px-4">DOC-001</td>
     <td class="py-3 px-4">Project Proposal</td>

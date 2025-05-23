@@ -1,16 +1,15 @@
 <template>
-  <div class="w-full lg:w-96 bg-gray-100 rounded-lg p-6">
+  <div class="w-full lg:w-96 bg-white rounded-lg p-6">
     <h2 class="text-xl font-medium mb-2">Add a new document</h2>
     <p class="text-gray-600 text-sm mb-6">
       Fill in the fields below and press add to generate a reference number
     </p>
 
-    <form @submit.prevent="handleSubmit" class="space-y-4">
+    <form class="space-y-4">
       <div>
         <label class="block mb-1 text-sm font-medium">Document Type</label>
         <div class="relative">
-          <select class="w-full px-4 py-2 border rounded-md appearance-none bg-gray-200 pr-10"
-            required>
+          <select class="w-full px-4 py-2 border border-gray-200 rounded-md appearance-none bg-gray-100 pr-10" required>
             <option value="">Select</option>
             <option value="IT">IT</option>
             <option value="HR">HR</option>
@@ -26,13 +25,12 @@
 
       <div>
         <label class="block mb-1 text-sm font-medium">Title</label>
-        <input type="text" placeholder="Value" class="w-full px-4 py-2 border rounded-md"
+        <input type="text" placeholder="Value" class="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-100"
           required />
       </div>
 
       <button type="submit"
-        class="w-full py-3 bg-slate-500 text-white rounded-md hover:bg-slate-600 transition-colors mt-4"
-        >
+        class="w-full py-3 bg-slate-500 text-white rounded-md hover:bg-slate-600 transition-colors mt-4">
         Add Document
       </button>
     </form>

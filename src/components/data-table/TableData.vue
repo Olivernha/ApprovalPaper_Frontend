@@ -1,17 +1,18 @@
 <template>
   <div class="flex-1">
-    <TableHeader />
-
-    <!--Table-->
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse">
-        <TableHead />
-        <tbody>
-          <TableRow />
-        </tbody>
-      </table>
+    <div class="bg-white rounded-md shadow-sm p-4">
+      <TableHeader />
+      <!--Table-->
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+          <TableHead />
+          <tbody>
+            <TableRow />
+          </tbody>
+        </table>
+      </div>
+      <TablePagination />
     </div>
-    <TablePagination />
   </div>
 </template>
 <script setup lang="ts">

@@ -5,10 +5,10 @@ import AddDocumentForm from './components/form/AddDocumentForm.vue';
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen flex flex-col bg-gray-100">
     <AppHeader />
     <!-- Main content area -->
-    <main class="flex-1 p-8">
+    <main class="flex-1 p-8 bg-[#f5f5f5">
       <div class="flex flex-col lg:flex-row gap-6">
         <TableData />
 
