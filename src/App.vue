@@ -2,17 +2,23 @@
 import AppHeader from './components/layout/AppHeader.vue';
 import TableData from './components/data-table/TableData.vue';
 import AddDocumentForm from './components/form/AddDocumentForm.vue';
+import { onMounted} from 'vue';
+import { useDocumentStore } from '@/stores/documentStore'
+
+const documentStore = useDocumentStore()
+
+
+onMounted(() => {
+  documentStore.fetchDocuments()
+});
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
     <AppHeader />
-    <!-- Main content area -->
-    <main class="flex-1 p-8 bg-[#f5f5f5">
+    <main class="flex-1 p-8 bg-[#f5f5f5]"> <!-- Fix typo: missing closing ] -->
       <div class="flex flex-col lg:flex-row gap-6">
         <TableData />
-
-        <!-- Add Document Form -->
         <AddDocumentForm />
       </div>
     </main>
