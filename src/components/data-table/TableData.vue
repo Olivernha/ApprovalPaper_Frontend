@@ -18,4 +18,5 @@
 import TableHeader from './TableHeader.vue';
 import TableHead from './TableHead.vue';
 import TableRow from './TableRow.vue';
+import TablePagination from './TablePagination.vue';
 </script>
