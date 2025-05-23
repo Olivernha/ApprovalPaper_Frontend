@@ -1,6 +1,6 @@
 <template>
   <div class="w-full lg:w-96 bg-white rounded-lg p-6">
-    <h2 class="text-xl font-medium mb-2">Add a new document</h2>
+    <h2 class="text-2xl font-medium mb-2">Add a new document</h2>
     <p class="text-gray-600 text-sm mb-6">
       Fill in the fields below and press add to generate a reference number
     </p>
@@ -9,7 +9,9 @@
       <div>
         <label class="block mb-1 text-sm font-medium">Document Type</label>
         <div class="relative">
-          <select class="w-full px-4 py-2 border border-gray-200 rounded-md appearance-none bg-gray-100 pr-10" required>
+          <select
+            class="w-full px-4 text-gray-500 py-2 border border-gray-200 rounded-md appearance-none bg-gray-100 pr-10 focus:outline-none"
+            required>
             <option value="">Select</option>
             <option value="IT">IT</option>
             <option value="HR">HR</option>
