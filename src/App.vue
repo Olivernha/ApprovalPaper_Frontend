@@ -2,14 +2,17 @@
 import AppHeader from './components/layout/AppHeader.vue';
 import TableData from './components/data-table/TableData.vue';
 import AddDocumentForm from './components/form/AddDocumentForm.vue';
-import { onMounted} from 'vue';
+import { onMounted } from 'vue';
 import { useDocumentStore } from '@/stores/documentStore'
+import { useDocumentTypeStore } from './stores/documentTypeStore';
 
 const documentStore = useDocumentStore()
-
+const documentTypeStore = useDocumentTypeStore();
 
 onMounted(() => {
+  documentTypeStore.fetchDocumentTypes();
   documentStore.fetchDocuments()
+
 });
 </script>
 

@@ -1,39 +1,5 @@
+import type { ApiDocument, DocumentState } from '@/types/documentTypes'
 import { defineStore } from 'pinia'
-
-// Define the frontend Document interface
-interface Document {
-  ref_no: string
-  fullRef: string
-  title: string
-  createdBy: string
-  date: string
-  status: string
-}
-
-// Define the API response document interface (based on backend)
-interface ApiDocument {
-  ref_no: string
-  title: string
-  created_by: string
-  created_date: string
-  status: string
-}
-
-interface DocumentState {
-  documents: Document[]
-  searchQuery: string
-  selectedDocumentType: string
-  statusFilter: string
-  departmentId: string
-  rowsPerPage: number
-  currentPage: number
-  sortField: string
-  sortDirection: 'asc' | 'desc'
-  totalDocuments: number
-  totalPages: number
-  hasNext: boolean
-  hasPrev: boolean
-}
 
 export const useDocumentStore = defineStore('documentStore', {
   state: (): DocumentState => ({
@@ -61,11 +27,11 @@ export const useDocumentStore = defineStore('documentStore', {
     async fetchDocuments() {
       try {
         const fieldMap: { [key: string]: string } = {
-          refNo: 'ref_no',
-          fullRef: 'full_ref',
+          ref_no: 'ref_no',
+          full_ref: 'full_ref',
           title: 'title',
           created_by: 'created_by',
-          date: 'created_date',
+          created_date: 'created_date',
           status: 'status',
         }
         const apiSortField = fieldMap[this.sortField] || this.sortField
@@ -105,7 +71,7 @@ export const useDocumentStore = defineStore('documentStore', {
         console.log('Fetched documents:', data)
         this.documents = (data.documents || []).map((doc: ApiDocument) => ({
           ref_no: doc.ref_no.split('/').pop() || '',
-          fullRef: doc.ref_no.substring(0, doc.ref_no.lastIndexOf('/')) || '',
+          full_ref: doc.ref_no.substring(0, doc.ref_no.lastIndexOf('/')) || '',
           title: doc.title,
           created_by: doc.created_by,
           created_date: doc.created_date, // Ensure date format matches frontend (e.g., DD/MM/YYYY)

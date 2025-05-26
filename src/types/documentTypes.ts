@@ -1,9 +1,9 @@
 export interface Document {
-  refNo: string
-  fullRef: string
+  ref_no: string
+  full_ref: string
   title: string
-  createdBy: string
-  date: string
+  created_by: string
+  created_date: string
   status: string
 }
 
@@ -29,4 +29,18 @@ export type ApiDocument = {
   created_by: string
   created_date: string
   status: string
+}
+export type ApiDocumentType = {
+  _id: string
+  name: string
+  prefix: string
+  padding: number
+  created_date: string
+}
+export type DocumentType = {
+  id: string
+  name: string
+  prefix: string
+  padding: number
+  created_date: string
 }
