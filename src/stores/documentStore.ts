@@ -51,6 +51,19 @@ export const useDocumentStore = defineStore('documentStore', {
     hasNext: false,
     hasPrev: false,
   }),
+  getters: {
+    paginationText: (state) => {
+      console.log(
+        'Calculating pagination text with state:',
+        state.currentPage,
+        state.rowsPerPage,
+        state.totalDocuments,
+      )
+      const totalPages = Math.ceil(state.totalDocuments / state.rowsPerPage)
+      const totalDocuments = state.totalDocuments
+      return `Page ${state.currentPage}-${totalPages} of ${totalDocuments}`
+    },
+  },
   actions: {
     async fetchDocuments() {
       try {
@@ -107,6 +120,8 @@ export const useDocumentStore = defineStore('documentStore', {
         }))
         this.totalDocuments = data.total || 0
         this.totalPages = data.pages || 1
+        this.currentPage = data.page || 1
+        this.rowsPerPage = data.limit || 10
         this.hasNext = data.has_next || false
         this.hasPrev = data.has_prev || false
       } catch (error) {
