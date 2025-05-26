@@ -5,7 +5,7 @@
     <td class="py-3 px-4">{{ doc.title }}</td>
     <td class="py-3 px-4">{{ doc.created_by }}</td>
     <td class="py-3 px-4">{{ doc.created_date.slice(0, 10) }}</td>
-    <td class="py-3 px-4">
+    <td class="py-3 ">
       <DocumentStatus :status="doc.status" />
     </td>
     <td class="py-3 px-4 text-right">

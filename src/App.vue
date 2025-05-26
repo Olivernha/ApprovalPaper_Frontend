@@ -1,25 +1,32 @@
 <script setup lang="ts">
-import AppHeader from './components/layout/AppHeader.vue';
-import TableData from './components/data-table/TableData.vue';
-import AddDocumentForm from './components/form/AddDocumentForm.vue';
-import { onMounted } from 'vue';
+import AppHeader from './components/layout/AppHeader.vue'
+import TableData from './components/data-table/TableData.vue'
+import AddDocumentForm from './components/form/AddDocumentForm.vue'
+import { onMounted } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useDocumentTypeStore } from './stores/documentTypeStore';
-
+import { useDocumentTypeStore } from './stores/documentTypeStore'
+import { useUserStore } from '@/stores/userStore'
+import axios from 'axios'
+const userStore = useUserStore()
 const documentStore = useDocumentStore()
-const documentTypeStore = useDocumentTypeStore();
+const documentTypeStore = useDocumentTypeStore()
+onMounted(async () => {
+  const response = await axios.get('http://tuasapp02/AuthBounce?host=http://localhost:5173', {
+    withCredentials: true,
+  })
+  const data = response.data.substring(8)
+  userStore.setUsername(data) // username
+  await documentTypeStore.fetchDocumentTypes()
+  await documentStore.fetchDocuments()
+})
 
-onMounted(() => {
-  documentTypeStore.fetchDocumentTypes();
-  documentStore.fetchDocuments()
-
-});
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
     <AppHeader />
-    <main class="flex-1 p-8 bg-[#f5f5f5]"> <!-- Fix typo: missing closing ] -->
+    <main class="flex-1 p-8 bg-[#f5f5f5]">
+      <!-- Fix typo: missing closing ] -->
       <div class="flex flex-col lg:flex-row gap-6">
         <TableData />
         <AddDocumentForm />

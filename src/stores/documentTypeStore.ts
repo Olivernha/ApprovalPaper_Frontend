@@ -1,26 +1,33 @@
 import { defineStore } from 'pinia'
+import api from '@/lib/axios'
 import type { ApiDocumentType, DocumentType } from '@/types/documentTypes'
 export const useDocumentTypeStore = defineStore('documentTypeStore', {
   state: () => ({
     documentTypes: [] as DocumentType[],
-    departmentId: '6833f6aa54080b8ffb83f778',
+    departmentId: '68341e8d1205c9c876f44c3a',
   }),
   actions: {
     async fetchDocumentTypes() {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/department/${this.departmentId}/document-types`,
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch document types')
+      try {
+        const response = await api.get(
+          `http://127.0.0.1:8000/api/v1/department/${this.departmentId}/document-types`,
+        )
+        if (response.status !== 200) {
+          console.error('Failed to fetch document types: ', response.statusText);
+          throw new Error('Failed to fetch document types');
+        }
+        const data = await response.data;
+        this.documentTypes = (data || []).map((type: ApiDocumentType) => ({
+          id: type._id,
+          name: type.name,
+          prefix: type.prefix,
+          padding: type.padding,
+          created_date: type.created_date,
+        }))
+      } catch (error) {
+        console.error('Error fetching document types:', error);
+        throw error;
       }
-      const data = await response.json()
-      this.documentTypes = (data || []).map((type: ApiDocumentType) => ({
-        id: type._id,
-        name: type.name,
-        prefix: type.prefix,
-        padding: type.padding,
-        created_date: type.created_date,
-      }))
     },
   },
 })

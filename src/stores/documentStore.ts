@@ -1,3 +1,4 @@
+import api from '@/lib/axios'
 import type { ApiDocument, DocumentState } from '@/types/documentTypes'
 import { defineStore } from 'pinia'
 
@@ -7,7 +8,7 @@ export const useDocumentStore = defineStore('documentStore', {
     searchQuery: '',
     selectedDocumentType: '',
     statusFilter: '',
-    departmentId: '6833f6aa54080b8ffb83f778', // Verify this ID
+    departmentId: '68341e8d1205c9c876f44c3a', // Verify this ID
     rowsPerPage: 10,
     currentPage: 1,
     sortField: 'created_date',
@@ -48,23 +49,16 @@ export const useDocumentStore = defineStore('documentStore', {
           sort_order: sortOrder.toString(),
         })
 
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/document/paginated?${params.toString()}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        )
+        const response = await api.get(`http://127.0.0.1:8000/api/v1/document/paginated`, {
+          params,
+        })
 
-        if (!response.ok) {
-          const text = await response.text()
-          console.error('Response status:', response.status, 'Response text:', text)
-          throw new Error(`HTTP error! status: ${response.status}`)
+        if (response.status !== 200) {
+          console.error('Failed to fetch document  ', response.statusText);
+          throw new Error('Failed to fetch document');
         }
-
-        const data = await response.json()
+        console.log(response)
+        const data = await response.data;
         if (typeof data !== 'object' || data === null) {
           throw new Error('Invalid JSON response')
         }
@@ -74,7 +68,7 @@ export const useDocumentStore = defineStore('documentStore', {
           full_ref: doc.ref_no.substring(0, doc.ref_no.lastIndexOf('/')) || '',
           title: doc.title,
           created_by: doc.created_by,
-          created_date: doc.created_date, // Ensure date format matches frontend (e.g., DD/MM/YYYY)
+          created_date: doc.created_date,
           status: doc.status,
         }))
         this.totalDocuments = data.total || 0
