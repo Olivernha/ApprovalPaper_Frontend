@@ -1,48 +1,44 @@
 <template>
-  <div class="flex items-center gap-2">
-    <span class="h-2 w-2 rounded-full" :class="statusClasses.dot"></span>
-    <span :class="statusClasses.text">
-      {{ status }}
-    </span>
-  </div>
+  <span :class="['inline-flex items-center px-3 py-1 rounded-full text-xs font-normal', statusColor, textColor]">
+    <span :class="['h-2 w-2 mr-2 rounded-full', dotColor]"></span>
+    {{ status }}
+  </span>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-const props = defineProps({
-  status: {
-    type: String,
-    required: true
-  }
-})
+const props = defineProps<{
+  status: string;
+}>();
 
-const statusClasses = computed(() => {
-  switch (props.status) {
-    case 'Unfiled':
-      return {
-        dot: 'bg-red-500',
-        text: 'text-red-500'
-      }
-    case 'Filed':
-      return {
-        dot: 'bg-green-500',
-        text: 'text-green-500'
-      }
-    case 'Suspended':
-      return {
-        dot: 'bg-blue-500',
-        text: 'text-blue-500'
-      }
-    default:
-      return {
-        dot: 'bg-gray-500',
-        text: 'text-gray-500'
-      }
-  }
-})
+type StatusType = 'Filed' | 'Not filed' | 'Suspended';
+
+const statusColor = computed((): string => {
+  const colors: Record<StatusType, string> = {
+    Filed: 'bg-[#ECFDF3]',
+    'Not filed': 'bg-[#F2C8C8]',
+    Suspended: 'bg-[#F2F4F7]',
+  };
+  return colors[props.status as StatusType] || colors['Not filed'];
+});
+
+const dotColor = computed((): string => {
+  const colors: Record<StatusType, string> = {
+    Filed: 'bg-[#14BA6D]',
+    'Not filed': 'bg-[#A41F36]',
+    Suspended: 'bg-[#6C778B]',
+  };
+  return colors[props.status as StatusType] || colors['Not filed'];
+});
+
+const textColor = computed((): string => {
+  const colors: Record<StatusType, string> = {
+    Filed: 'text-[#14BA6D]',
+    'Not filed': 'text-[#A41F36]',
+    Suspended: 'text-[#6C778B]',
+  };
+  return colors[props.status as StatusType] || colors['Not filed'];
+});
 </script>
 
-<style scoped>
-/* Component-specific styles */
-</style>
