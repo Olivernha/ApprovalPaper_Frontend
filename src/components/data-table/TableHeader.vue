@@ -6,9 +6,10 @@
     </div>
     <div class="ml-auto flex items-center gap-2">
       <div class="relative">
-        <input type="text" placeholder="Search..."
+        <input v-model="store.searchQuery" type="text" placeholder="Search..."
           class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
-        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700">
+        <button v-if="store.searchQuery" @click="clearSearch"
+          class="absolute cursor-pointer right-3 top-1/2 transform -translate-y-1/2 text-gray-700">
           <XIcon class="h-4 w-4" />
         </button>
       </div>
@@ -37,4 +38,16 @@
 </template>
 <script setup lang="ts">
 import { ChevronDown as ChevronDownIcon, Download as DownloadIcon, X as XIcon } from 'lucide-vue-next'
+import { useDocumentStore } from '@/stores/documentStore'
+import { watch } from 'vue';
+const store = useDocumentStore();
+
+watch(() => store.searchQuery, async (oldQuery, newQuery) => {
+  if (oldQuery !== newQuery) {
+    await store.fetchDocuments();
+  }
+}, { immediate: true });
+const clearSearch = async () => {
+  store.searchQuery = '';
+};
 </script>

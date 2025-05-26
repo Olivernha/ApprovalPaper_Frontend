@@ -21,13 +21,10 @@
 import { MoreVertical as MoreVerticalIcon } from 'lucide-vue-next'
 import DocumentStatus from './DataStatus.vue'
 import { useDocumentStore } from '@/stores/documentStore';
-import { computed, watchEffect } from 'vue';
+import { computed } from 'vue';
 
 const documentStore = useDocumentStore();
 const documents = computed(() => documentStore.documents);
-watchEffect(() => {
-  console.log('Document count (reactive):', documentStore.documents);
-});
 </script>
 
 <style scoped></style>

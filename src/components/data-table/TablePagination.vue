@@ -15,13 +15,13 @@
     <div class="flex items-center gap-4">
       <div>{{ paginationText }}</div>
       <div class="flex">
-        <button
-          class="h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-          <ChevronLeftIcon class="h-4 w-4" />
+        <button @click="previousPage" :disabled="!store.hasPrev"
+          class="h-8 w-8 cursor-pointer flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+          <ChevronLeftIcon class="h-4 w-4 " />
         </button>
-        <button
-          class="h-8 w-8 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-          <ChevronRightIcon class="h-4 w-4" />
+        <button @click="nextPage" :disabled="!store.hasNext"
+          class="h-8 w-8 cursor-pointer flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+          <ChevronRightIcon class="h-4 w-4 " />
         </button>
       </div>
     </div>
@@ -42,15 +42,28 @@ const store = useDocumentStore()
 const rowsPerPage = ref(store.rowsPerPage)
 const paginationText = ref(store.paginationText)
 
-// Watch rowsPerPage and fetch documents when it changes
-watch(rowsPerPage, (newVal) => {
+watch(rowsPerPage, async (newVal) => {
   store.rowsPerPage = parseInt(newVal as number, 10)
-  store.fetchDocuments()
+  store.currentPage = 1 // Reset to first page
+  await store.fetchDocuments()
 })
 
-// Watch paginationText and update it when documents change
 watch(() => store.documents, () => {
   paginationText.value = store.paginationText
 }, { immediate: true })
+
+const previousPage = () => {
+  if (store.currentPage > 1) {
+    store.currentPage--
+    store.fetchDocuments()
+  }
+}
+
+const nextPage = () => {
+  if (store.currentPage < store.totalPages) {
+    store.currentPage++
+    store.fetchDocuments()
+  }
+}
 
 </script>
