@@ -7,7 +7,7 @@ export const useDocumentStore = defineStore('documentStore', {
     searchQuery: '',
     selectedDocumentType: '',
     statusFilter: '',
-    departmentId: '68356f0d6e27d0f7d2a271eb', // Verify this ID
+    departmentId: import.meta.env.VITE_DEPARTMENT_ID || '', // Verify this ID
     rowsPerPage: 10,
     currentPage: 1,
     sortField: 'created_date',
@@ -167,33 +167,49 @@ export const useDocumentStore = defineStore('documentStore', {
         const response = await api.get(
           `http://127.0.0.1:8000/api/v1/document/download/${documentId}`,
           {
-            responseType: 'blob'
-          }
-        );
+            responseType: 'blob',
+          },
+        )
 
-        const blob = new Blob([response.data], { type: response.data.type });
-        const downloadUrl = window.URL.createObjectURL(blob);
+        const blob = new Blob([response.data], { type: response.data.type })
+        const downloadUrl = window.URL.createObjectURL(blob)
 
-        const link = document.createElement('a');
-        link.href = downloadUrl;
+        const link = document.createElement('a')
+        link.href = downloadUrl
 
         // Try extracting the filename from response headers if available
-        const contentDisposition = response.headers['content-disposition'];
-        let filename = 'downloaded_file';
+        const contentDisposition = response.headers['content-disposition']
+        let filename = 'downloaded_file'
         if (contentDisposition) {
-          const match = contentDisposition.match(/filename="(.+)"/);
+          const match = contentDisposition.match(/filename="(.+)"/)
           if (match?.[1]) {
-            filename = match[1];
+            filename = match[1]
           }
         }
 
-        link.download = filename;
-        link.click();
-        window.URL.revokeObjectURL(downloadUrl);
+        link.download = filename
+        link.click()
+        window.URL.revokeObjectURL(downloadUrl)
       } catch (error) {
-        console.error('Error downloading file:', error);
+        console.error('Error downloading file:', error)
+      }
+    },
+
+    async deleteDocument(documentId: string) {
+      this.isLoading = true
+      try {
+        const response = await api.delete(`http://127.0.0.1:8000/api/v1/document/${documentId}`)
+        if (response.status !== 200) {
+          console.error('Failed to delete document: ', response.statusText)
+          throw new Error('Failed to delete document')
+        }
+        await this.fetchDocuments()
+      } catch (error) {
+        console.error('Error deleting document:', error)
+        throw error
+      } finally {
+        this.isLoading = false
       }
     }
-
   },
 })

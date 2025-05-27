@@ -21,7 +21,7 @@
     </td>
     <td class="py-3 px-4 text-right relative">
       <button
-        v-if="username === doc.created_by"
+        v-if="username === doc.created_by || userStore.isAdmin"
         :disabled="documentStore.isLoading"
         @click="toggleDropdown(index)"
         class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
@@ -47,6 +47,7 @@
         </button>
         <button
           @click="deleteDocument(doc)"
+          v-if="userStore.isAdmin"
           class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
         >
           <TrashIcon class="w-4 h-4" />
@@ -111,16 +112,16 @@ const handleDocumentUpdate = async (updatedData: { title: string; file?: File })
   }
 }
 
-// const deleteDocument = async (doc: Document) => {
-//   if (confirm('Are you sure you want to delete this document?')) {
-//     try {
-//       await documentStore.deleteDocument(doc.ref_no)
-//     } catch (error) {
-//       console.error('Failed to delete document:', error)
-//     }
-//   }
-//   activeDropdown.value = null
-// }
+const deleteDocument = async (doc:any) => {
+  if (confirm('Are you sure you want to delete this document?')) {
+    try {
+      await documentStore.deleteDocument(doc.id)
+    } catch (error) {
+      console.error('Failed to delete document:', error)
+    }
+  }
+  activeDropdown.value = null
+}
 
 const handleClickOutside = (event: MouseEvent) => {
   if (event.target instanceof Element && !event.target.closest('.relative')) {
@@ -128,7 +129,7 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 const downloadDocument = async (doc: any) => {
-  if (doc.id) {
+  if (doc.file_id) {
     await documentStore.downloadAttachment(doc.id)
   } else {
     alert('No attachment available for this document.')

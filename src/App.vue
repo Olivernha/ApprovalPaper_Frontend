@@ -11,11 +11,12 @@ const userStore = useUserStore()
 const documentStore = useDocumentStore()
 const documentTypeStore = useDocumentTypeStore()
 onMounted(async () => {
-  const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
-    withCredentials: true,
-  })
-  const data = response.data.substring(8)
-  userStore.setUsername(data) // username
+  // const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
+  //   withCredentials: true,
+  // })
+  // const data = response.data.substring(8)
+  // userStore.setUsername(data)
+  userStore.setUsername('kevinparker')
   await documentTypeStore.fetchDocumentTypes()
   await documentStore.fetchDocuments()
   await userStore.checkIsAdmin()
