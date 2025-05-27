@@ -11,7 +11,7 @@ const userStore = useUserStore()
 const documentStore = useDocumentStore()
 const documentTypeStore = useDocumentTypeStore()
 onMounted(async () => {
-  const response = await axios.get('http://tuasapp02/AuthBounce?host=http://localhost:5173', {
+  const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
     withCredentials: true,
   })
   const data = response.data.substring(8)
@@ -26,7 +26,6 @@ onMounted(async () => {
   <div class="min-h-screen flex flex-col bg-gray-100">
     <AppHeader />
     <main class="flex-1 p-8 bg-[#f5f5f5]">
-      <!-- Fix typo: missing closing ] -->
       <div class="flex flex-col lg:flex-row gap-6">
         <TableData />
         <AddDocumentForm />

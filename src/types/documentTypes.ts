@@ -21,6 +21,7 @@ export interface DocumentState {
   totalPages: number
   hasNext: boolean
   hasPrev: boolean
+  isLoading: boolean
 }
 export type ApiDocument = {
   ref_no: string
@@ -43,4 +44,9 @@ export type DocumentType = {
   prefix: string
   padding: number
   created_date: string
+}
+export interface NewDocument {
+  department_id:string
+  document_type_id: string;
+  title: string;
 }

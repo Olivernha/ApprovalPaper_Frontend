@@ -17,6 +17,7 @@ export const useDocumentStore = defineStore('documentStore', {
     totalPages: 1,
     hasNext: false,
     hasPrev: false,
+    isLoading: false,
   }),
   getters: {
     paginationText: (state) => {
@@ -26,6 +27,7 @@ export const useDocumentStore = defineStore('documentStore', {
   },
   actions: {
     async fetchDocuments() {
+      this.isLoading = true;
       try {
         const fieldMap: { [key: string]: string } = {
           ref_no: 'ref_no',
@@ -77,6 +79,7 @@ export const useDocumentStore = defineStore('documentStore', {
         this.rowsPerPage = data.limit || 10
         this.hasNext = data.has_next || false
         this.hasPrev = data.has_prev || false
+        this.isLoading = false
       } catch (error) {
         console.error('Error fetching documents:', error)
         this.documents = []
@@ -102,6 +105,29 @@ export const useDocumentStore = defineStore('documentStore', {
     previousPage() {
       if (this.hasPrev) {
         this.currentPage--
+      }
+    },
+
+    async addDocument(newDoc: { document_type_id: string; title: string;  department_id?: string }) {
+      try {
+        this.isLoading = true;
+        const response = await api.post('http://127.0.0.1:8000/api/v1/document/', {
+          document_type_id: newDoc.document_type_id,
+          title: newDoc.title,
+          ...(newDoc.department_id && { department_id: newDoc.department_id }),
+        });
+
+        if (response.status !== 201) {
+          throw new Error(`Failed to add document: ${response.statusText}`);
+        }
+
+        // Refetch documents to update the list
+        await this.fetchDocuments();
+
+        this.isLoading = false;
+      } catch (error) {
+        console.error('Error adding document:', error);
+        throw error;
       }
     },
   },
