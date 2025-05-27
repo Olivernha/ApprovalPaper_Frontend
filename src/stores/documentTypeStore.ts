@@ -4,7 +4,7 @@ import type { ApiDocumentType, DocumentType } from '@/types/documentTypes'
 export const useDocumentTypeStore = defineStore('documentTypeStore', {
   state: () => ({
     documentTypes: [] as DocumentType[],
-    departmentId: '68341e8d1205c9c876f44c3a',
+    departmentId: '68356f0d6e27d0f7d2a271eb',
     isLoading: false
   }),
   actions: {

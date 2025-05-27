@@ -1,32 +1,147 @@
 <template>
-  <tr v-for="doc in documents" :key="doc.ref_no" class="border-b border-b-gray-300 hover:bg-gray-50 transition-colors">
+   <!-- Edit Modal -->
+   <EditDocumentModal
+    :is-open="isEditModalOpen"
+    :document="selectedDocument"
+    @close="closeEditModal"
+    @update="handleDocumentUpdate"
+  />
+  <tr
+    v-for="(doc, index) in documents"
+    :key="doc.ref_no"
+    class="border-b border-b-gray-300 hover:bg-gray-50 transition-colors"
+  >
     <td class="py-3 px-4">{{ doc.ref_no }}</td>
     <td class="py-3 px-4">{{ doc.full_ref }}</td>
     <td class="py-3 px-4">{{ doc.title }}</td>
     <td class="py-3 px-4">{{ doc.created_by }}</td>
     <td class="py-3 px-4">{{ doc.created_date.slice(0, 10) }}</td>
-    <td class="py-3 ">
+    <td class="py-3">
       <DocumentStatus :status="doc.status" :isLoading="documentStore.isLoading" />
     </td>
-    <td class="py-3 px-4 text-right">
+    <td class="py-3 px-4 text-right relative">
       <button
+        v-if="username === doc.created_by"
         :disabled="documentStore.isLoading"
+        @click="toggleDropdown(index)"
         class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
       >
         <MoreVerticalIcon class="h-4 w-4" />
       </button>
+      <div
+        v-if="activeDropdown === index"
+        class="absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-10 min-w-[160px] right-0 top-full mt-1"
+      >
+        <button
+          @click="openEditModal(doc)"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer"
+        >
+          <EditIcon class="w-4 h-4" />
+          Edit
+        </button>
+        <button
+          @click="downloadDocument(doc)"
+        class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer">
+          <EyeIcon class="w-4 h-4" />
+          Download attachment
+        </button>
+        <button
+          @click="deleteDocument(doc)"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
+        >
+          <TrashIcon class="w-4 h-4" />
+          Delete
+        </button>
+      </div>
     </td>
   </tr>
+
+
 </template>
 
 <script setup lang="ts">
-import { MoreVertical as MoreVerticalIcon } from 'lucide-vue-next'
+import { MoreVertical as MoreVerticalIcon, Edit as EditIcon, Eye as EyeIcon, Trash as TrashIcon } from 'lucide-vue-next'
 import DocumentStatus from './DataStatus.vue'
-import { useDocumentStore } from '@/stores/documentStore';
-import { computed } from 'vue';
+import EditDocumentModal from '@/components/form/Dialog/EditDocumentForm.vue'
+import { useDocumentStore } from '@/stores/documentStore'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useUserStore } from '@/stores/userStore'
+import type { ApiDocument } from '@/types/documentTypes'
 
-const documentStore = useDocumentStore();
-const documents = computed(() => documentStore.documents);
+const documentStore = useDocumentStore()
+const userStore = useUserStore()
+const documents = computed(() => documentStore.documents)
+const username = computed(() => userStore.username)
+const activeDropdown = ref<number | null>(null)
+const isEditModalOpen = ref(false)
+const selectedDocument = ref<any | null>(null) // Temporarily use 'any' if the type mismatch persists
+
+const toggleDropdown = (index: number) => {
+  if (activeDropdown.value === index) {
+    activeDropdown.value = null
+  } else {
+    activeDropdown.value = index
+  }
+}
+
+const openEditModal = (doc: ApiDocument) => {
+  selectedDocument.value = doc
+  isEditModalOpen.value = true
+  activeDropdown.value = null // Close dropdown
+}
+
+const closeEditModal = () => {
+  isEditModalOpen.value = false
+  selectedDocument.value = null
+}
+
+const handleDocumentUpdate = async (updatedData: { title: string; file?: File }) => {
+  try {
+    // Update using Pinia store
+    const updatedDocument = {
+      ...selectedDocument.value,
+      title: updatedData.title,
+      attachment : updatedData.file || selectedDocument.value.file // Keep existing file if not updated
+    }
+    await documentStore.updateDocument(selectedDocument.value.ref_no, updatedDocument)
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update document:', error)
+    // Handle error (show toast, etc.)
+  }
+}
+
+// const deleteDocument = async (doc: Document) => {
+//   if (confirm('Are you sure you want to delete this document?')) {
+//     try {
+//       await documentStore.deleteDocument(doc.ref_no)
+//     } catch (error) {
+//       console.error('Failed to delete document:', error)
+//     }
+//   }
+//   activeDropdown.value = null
+// }
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (event.target instanceof Element && !event.target.closest('.relative')) {
+    activeDropdown.value = null
+  }
+}
+const downloadDocument = async (doc: any) => {
+  if (doc.id) {
+    await documentStore.downloadAttachment(doc.id)
+  } else {
+    alert('No attachment available for this document.')
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>

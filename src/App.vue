@@ -18,6 +18,7 @@ onMounted(async () => {
   userStore.setUsername(data) // username
   await documentTypeStore.fetchDocumentTypes()
   await documentStore.fetchDocuments()
+  await userStore.checkIsAdmin()
 })
 
 </script>

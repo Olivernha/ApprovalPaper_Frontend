@@ -209,6 +209,8 @@ const addDocument = async () => {
   submitError.value = ''
 
   try {
+    console.log('Adding document:', newDocument.value)
+
     await store.addDocument({
       document_type_id: newDocument.value.document_type_id,
       title: newDocument.value.title,

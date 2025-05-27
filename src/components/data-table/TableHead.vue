@@ -2,20 +2,15 @@
   <thead>
     <tr class="border-b border-b-gray-300 text-left text-sm text-gray-500">
       <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('ref_no')">
+        <div class="flex items-center gap-1">
           RefNo
-          <component
-            :is="getSortIcon('ref_no')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
         </div>
       </th>
       <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('full_ref')">
+        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('ref_no')">
           Full Reference
           <component
-            :is="getSortIcon('full_ref')"
+            :is="getSortIcon('ref_no')"
             class="h-4 w-4 transition-transform duration-200"
             :class="{ 'opacity-50': isLoading }"
           />

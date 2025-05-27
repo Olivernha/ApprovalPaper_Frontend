@@ -25,11 +25,16 @@ export interface DocumentState {
 }
 export type ApiDocument = {
   ref_no: string
-  full_ref: string
+  full_ref?: string
   title: string
   created_by: string
   created_date: string
-  status: string
+  file?: File
+  status?: string
+  _id?: string
+  document_type_id?: string
+  department_id?: string
+  file_id?: string
 }
 export type ApiDocumentType = {
   _id: string
@@ -50,3 +55,13 @@ export interface NewDocument {
   document_type_id: string;
   title: string;
 }
+
+export interface UpdateDocument {
+  id: string;
+  department_id: string;
+  document_type_id: string;
+  title: string;
+  attachment : File
+  status?: string;
+}
+
