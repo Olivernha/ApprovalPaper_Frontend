@@ -6,26 +6,17 @@
     </div>
     <div class="ml-auto flex items-center gap-2">
       <div class="relative">
-        <input
-          v-model="documentStore.searchQuery"
-          type="text"
-          placeholder="Search..."
+        <input v-model="documentStore.searchQuery" type="text" placeholder="Search..."
           :disabled="documentStore.isLoading"
-          class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
-        >
-        <button
-          v-if="documentStore.searchQuery && !documentStore.isLoading"
-          @click="clearSearch"
-          class="absolute cursor-pointer right-3 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 transition-colors"
-        >
+          class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
+        <button v-if="documentStore.searchQuery && !documentStore.isLoading" @click="clearSearch"
+          class="absolute cursor-pointer right-3 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 transition-colors">
           <XIcon class="h-4 w-4" />
         </button>
 
         <!-- Loading spinner in search -->
-        <div
-          v-if="documentStore.isLoading && documentStore.searchQuery"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2"
-        >
+        <div v-if="documentStore.isLoading && documentStore.searchQuery"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2">
           <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
         </div>
       </div>
@@ -37,13 +28,10 @@
         </div>
 
         <!-- Actual select -->
-        <select
-          v-else
+        <select v-else
           class="w-full px-4 text-gray-700 py-2 border border-gray-300 rounded-md appearance-none pr-10 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
-          v-model="documentStore.selectedDocumentType"
-          :disabled="documentStore.isLoading"
-        >
-          <option value="">Document Type</option>
+          v-model="documentStore.selectedDocumentType" :disabled="documentStore.isLoading">
+          <option value="" disabled selected>Document Type</option>
           <option v-for="type in documentTypeStore.documentTypes" :key="type.id" :value="type.id">
             {{ type.name }}
           </option>
@@ -55,16 +43,11 @@
         </div>
 
         <!-- Chevron icon -->
-        <ChevronDownIcon
-          v-else
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-700"
-        />
+        <ChevronDownIcon v-else class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-700" />
       </div>
 
-      <button
-        :disabled="documentStore.isLoading || isExporting"
-        class="flex items-center text-gray-700 gap-1 px-4 py-2 border border-gray-300 rounded-md bg-white whitespace-nowrap hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
-      >
+      <button :disabled="documentStore.isLoading || isExporting"
+        class="flex items-center text-gray-700 gap-1 px-4 py-2 border border-gray-300 rounded-md bg-white whitespace-nowrap hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
         <div v-if="isExporting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
         <DownloadIcon v-else class="h-4 w-4 mr-2" />
         {{ isExporting ? 'Exporting...' : 'Export' }}
@@ -140,13 +123,25 @@ const clearSearch = async () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-spin {

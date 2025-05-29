@@ -5,6 +5,14 @@ export interface Document {
   created_by: string
   created_date: string
   status: string
+  _id?: string
+  document_type_id?: string
+  department_id?: string
+  file_id?: string
+  file?: File
+  attachment?: File
+  filed_by?: string
+  filed_date?: string
 }
 
 export interface DocumentState {
@@ -22,6 +30,7 @@ export interface DocumentState {
   hasNext: boolean
   hasPrev: boolean
   isLoading: boolean
+  selectedItems: string[]
 }
 export type ApiDocument = {
   ref_no: string
@@ -35,6 +44,8 @@ export type ApiDocument = {
   document_type_id?: string
   department_id?: string
   file_id?: string
+  filed_by?: string
+  filed_date?: string
 }
 export type ApiDocumentType = {
   _id: string
@@ -51,17 +62,22 @@ export type DocumentType = {
   created_date: string
 }
 export interface NewDocument {
-  department_id:string
-  document_type_id: string;
-  title: string;
+  department_id: string
+  document_type_id: string
+  title: string
 }
 
 export interface UpdateDocument {
-  id: string;
-  department_id: string;
-  document_type_id: string;
-  title: string;
-  attachment : File
-  status?: string;
+  file_id: string
+  created_by: string
+  created_date: string
+  id: string
+  department_id: string
+  document_type_id: string
+  title: string
+  file: File
+  status?: string
+  filed_by?: string
+  filed_date?: string
+  filed_id?: string
 }
-

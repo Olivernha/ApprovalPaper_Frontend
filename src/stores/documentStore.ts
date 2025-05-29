@@ -17,11 +17,35 @@ export const useDocumentStore = defineStore('documentStore', {
     hasNext: false,
     hasPrev: false,
     isLoading: false,
+    selectedItems: [] as string[],
   }),
   getters: {
     paginationText: (state) => {
       const totalPages = Math.ceil(state.totalDocuments / state.rowsPerPage)
       return `Page ${state.currentPage} of ${totalPages} — Total ${state.totalDocuments} records`
+    },
+    isAllSelected: (state) => {
+      return (
+        state.documents.length > 0 &&
+        state.documents.every((doc) => state.selectedItems.includes(doc))
+      )
+    },
+
+    isIndeterminate: (state) => {
+      return state.selectedItems.length > 0 && state.selectedItems.length < state.documents.length
+    },
+
+    selectedCount: (state) => state.selectedItems.length,
+
+    // all documents count by status
+    getUnfiledDocumentsCount: (state) => {
+      return state.documents.filter((doc) => doc.status === 'Not Filed').length
+    },
+    getFiledDocuments: (state) => {
+      return state.documents.filter((doc) => doc.status === 'Filed')
+    },
+    getSuspendedDocuments: (state) => {
+      return state.documents.filter((doc) => doc.status === 'Suspended')
     },
   },
   actions: {
@@ -72,7 +96,9 @@ export const useDocumentStore = defineStore('documentStore', {
           document_type_id: doc.document_type_id,
           department_id: doc.department_id,
           id: doc._id,
-          file_id: doc.file_id,
+          file_id: doc.file_id || '',
+          filed_by: doc.filed_by || '',
+          filed_date: doc.filed_date || '',
         }))
         this.totalDocuments = data.total || 0
         this.totalPages = data.pages || 1
@@ -132,18 +158,25 @@ export const useDocumentStore = defineStore('documentStore', {
       }
     },
 
-    async updateDocument(refNo: string, updateData: UpdateDocument) {
+    async updateDocument(updateData: UpdateDocument) {
+      console.log('Updating document with data:', updateData)
       this.isLoading = true
       try {
         const formData = new FormData()
-        if (updateData.attachment) {
-          formData.append('file', updateData.attachment)
+        if (updateData.file) {
+          formData.append('file', updateData.file)
         }
         formData.append('document_type_id', updateData.document_type_id)
         formData.append('title', updateData.title)
         formData.append('department_id', updateData.department_id)
-        formData.append('ref_no', refNo)
         formData.append('id', updateData.id)
+        formData.append('doc_status', updateData.status || 'Not Filed')
+        formData.append('created_by', updateData.created_by || '')
+        formData.append('created_date', updateData.created_date || new Date().toISOString())
+        formData.append('filed_by', updateData.filed_by || '')
+        formData.append('filed_date', updateData.filed_date || '')
+        formData.append('filed_id', updateData.filed_id || '')
+
         const response = await api.put(
           `http://127.0.0.1:8000/api/v1/document/${updateData.id}`,
           formData,
@@ -210,6 +243,68 @@ export const useDocumentStore = defineStore('documentStore', {
       } finally {
         this.isLoading = false
       }
-    }
+    },
+    toggleSelect(documentId: string) {
+      const index = this.selectedItems.indexOf(documentId)
+      if (index > -1) {
+        this.selectedItems.splice(index, 1)
+      } else {
+        this.selectedItems.push(documentId)
+      }
+    },
+    toggleSelectAll() {
+      if (this.isAllSelected) {
+        this.selectedItems = []
+      } else {
+        this.selectedItems = this.documents.map((doc) => doc.id)
+      }
+    },
+
+    clearSelection() {
+      this.selectedItems = []
+    },
+
+    isSelected(documentId: string) {
+      return this.selectedItems.includes(documentId)
+    },
+
+    async applyBulkAction(action: string) {
+      this.isLoading = true
+      let url = ''
+      let payload: { status?: string; document_ids?: string[] } = {}
+      if (action !== 'Delete') {
+        url = 'http://127.0.0.1:8000/api/v1/document/bulk-update-status'
+        payload = {
+          status: action,
+          document_ids: [...this.selectedItems],
+        }
+      } else {
+        url = 'http://127.0.0.1:8000/api/v1/document/bulk-delete'
+        payload = {
+          document_ids: [...this.selectedItems],
+        }
+      }
+      {
+        // "document_ids": [
+        //   "66488b368a6801e71d70dfe9",
+        //   "66488b368a6801e71d70dfea"
+        // ],
+        // "status": "Filed"
+      }
+      console.log('Applying bulk action:', action, 'on documents:', this.selectedItems)
+      try {
+        const response = await api.post(url, payload)
+        if (response.status !== 200) {
+          console.error('Failed to apply bulk action: ', response.statusText)
+          throw new Error('Failed to apply bulk action')
+        }
+        await this.fetchDocuments()
+      } catch (error) {
+        console.error('Error applying bulk action:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
   },
 })

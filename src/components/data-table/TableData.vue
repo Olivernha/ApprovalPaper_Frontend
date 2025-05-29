@@ -2,12 +2,10 @@
   <div class="flex-1">
     <div class="bg-white rounded-md shadow-sm p-4 relative">
       <TableHeader />
-
+      <BulkActionsBar />
       <!-- Loading Overlay -->
-      <div
-        v-if="isInitialLoading"
-        class="absolute inset-0 bg-white bg-opacity-90 rounded-md flex items-center justify-center z-10"
-      >
+      <div v-if="isInitialLoading"
+        class="absolute inset-0 bg-white bg-opacity-90 rounded-md flex items-center justify-center z-10">
         <div class="text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500 mx-auto mb-4"></div>
           <p class="text-lg font-medium text-gray-700">Loading Documents...</p>
@@ -19,6 +17,7 @@
       <div class="overflow-x-auto">
         <table class="min-w-full border-collapse">
           <TableHead />
+
           <tbody>
             <!-- Loading Skeleton Rows -->
             <template v-if="documentStore.isLoading && !isInitialLoading">
@@ -55,16 +54,16 @@
               <td colspan="7" class="py-12 px-4 text-center text-gray-500">
                 <div class="flex flex-col items-center gap-3">
                   <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
                   </svg>
                   <div>
                     <p class="text-lg font-medium text-gray-900">No documents found</p>
                     <p class="text-sm text-gray-500 mt-1">Try adjusting your search or filter criteria</p>
                   </div>
-                  <button
-                    @click="refreshDocuments"
-                    class="mt-2 px-4 py-2 bg-slate-500 text-white rounded-md hover:bg-slate-600 transition-colors"
-                  >
+                  <button @click="refreshDocuments"
+                    class="mt-2 px-4 py-2 bg-slate-500 text-white rounded-md hover:bg-slate-600 transition-colors">
                     Refresh
                   </button>
                 </div>
@@ -86,7 +85,7 @@ import TableHead from './TableHead.vue';
 import TableRow from './TableRow.vue';
 import TablePagination from './TablePagination.vue';
 import { useDocumentStore } from '@/stores/documentStore';
-
+import BulkActionsBar from '../data-table/BulkActionsBar.vue';
 const documentStore = useDocumentStore()
 const isInitialLoading = ref(true)
 
@@ -105,13 +104,25 @@ onMounted(async () => {
 
 <style scoped>
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-spin {

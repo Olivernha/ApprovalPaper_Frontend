@@ -1,6 +1,14 @@
 <template>
   <thead>
     <tr class="border-b border-b-gray-300 text-left text-sm text-gray-500">
+      <!-- Bulk Selection Checkbox -->
+      <th class="py-3 px-4 font-medium w-12">
+        <div class="flex items-center">
+          <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleSelectAll"
+            :disabled="isLoading"
+            class="w-4 h-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500 disabled:opacity-50 accent-[#A41F36]" />
+        </div>
+      </th>
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1">
           RefNo
@@ -9,51 +17,36 @@
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('ref_no')">
           Full Reference
-          <component
-            :is="getSortIcon('ref_no')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
+          <component :is="getSortIcon('ref_no')" class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('title')">
           Title
-          <component
-            :is="getSortIcon('title')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
+          <component :is="getSortIcon('title')" class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_by')">
           Created By
-          <component
-            :is="getSortIcon('created_by')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
+          <component :is="getSortIcon('created_by')" class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_date')">
           Date
-          <component
-            :is="getSortIcon('created_date')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
+          <component :is="getSortIcon('created_date')" class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('status')">
           Status
-          <component
-            :is="getSortIcon('status')"
-            class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }"
-          />
+          <component :is="getSortIcon('status')" class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
       <th class="py-3 px-4 font-medium"></th>
@@ -69,6 +62,8 @@ import { computed } from 'vue'
 const documentStore = useDocumentStore()
 
 const isLoading = computed(() => documentStore.isLoading)
+const isAllSelected = computed(() => documentStore.isAllSelected)
+const isIndeterminate = computed(() => documentStore.isIndeterminate)
 
 const handleSort = async (field: string) => {
   if (isLoading.value) return
@@ -82,6 +77,10 @@ const getSortIcon = (field: string) => {
     return documentStore.sortDirection === 'asc' ? ArrowUpIcon : ArrowDownIcon
   }
   return ArrowDownIcon
+}
+
+const toggleSelectAll = () => {
+  documentStore.toggleSelectAll()
 }
 </script>
 
