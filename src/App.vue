@@ -18,12 +18,11 @@ onMounted(async () => {
   // })
   // const data = response.data.substring(8)
   // userStore.setUsername(data)
-  userStore.setUsername('thomaswright')
+  userStore.setUsername('anichols')
   await documentTypeStore.fetchDocumentTypes()
   await documentStore.fetchDocuments()
   await userStore.checkIsAdmin()
 })
-
 </script>
 
 <template>
@@ -35,7 +34,7 @@ onMounted(async () => {
         <TableData />
         <div class="flex flex-col gap-6">
           <AddDocumentForm />
-          <DocumentSummaryCard  />
+          <DocumentSummaryCard />
         </div>
       </div>
     </main>

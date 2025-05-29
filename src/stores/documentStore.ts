@@ -18,6 +18,7 @@ export const useDocumentStore = defineStore('documentStore', {
     hasPrev: false,
     isLoading: false,
     selectedItems: [] as string[],
+    countStatus: {},
   }),
   getters: {
     paginationText: (state) => {
@@ -39,13 +40,13 @@ export const useDocumentStore = defineStore('documentStore', {
 
     // all documents count by status
     getUnfiledDocumentsCount: (state) => {
-      return state.documents.filter((doc) => doc.status === 'Not Filed').length
+      return state.countStatus['Not Filed'] || 0
     },
-    getFiledDocuments: (state) => {
-      return state.documents.filter((doc) => doc.status === 'Filed')
+    getFiledDocumentsCount: (state) => {
+      return state.countStatus['Filed'] || 0
     },
-    getSuspendedDocuments: (state) => {
-      return state.documents.filter((doc) => doc.status === 'Suspended')
+    getSuspendedDocumentsCount: (state) => {
+      return state.countStatus['Suspended'] || 0
     },
   },
   actions: {
@@ -114,6 +115,9 @@ export const useDocumentStore = defineStore('documentStore', {
         this.totalPages = 1
         this.hasNext = false
         this.hasPrev = false
+      } finally {
+        await this.fetchDocCount()
+        this.isLoading = false
       }
     },
     sortBy(field: string) {
@@ -163,19 +167,15 @@ export const useDocumentStore = defineStore('documentStore', {
       this.isLoading = true
       try {
         const formData = new FormData()
-        if (updateData.file) {
-          formData.append('file', updateData.file)
+        for (const [key, value] of Object.entries(updateData)) {
+          if (value && key === 'status') {
+            formData.append('doc_status', value)
+          } else if (value instanceof File) {
+            formData.append('file', value)
+          } else if (value && key !== 'file') {
+            formData.append(key, String(value))
+          }
         }
-        formData.append('document_type_id', updateData.document_type_id)
-        formData.append('title', updateData.title)
-        formData.append('department_id', updateData.department_id)
-        formData.append('id', updateData.id)
-        formData.append('doc_status', updateData.status || 'Not Filed')
-        formData.append('created_by', updateData.created_by || '')
-        formData.append('created_date', updateData.created_date || new Date().toISOString())
-        formData.append('filed_by', updateData.filed_by || '')
-        formData.append('filed_date', updateData.filed_date || '')
-        formData.append('filed_id', updateData.filed_id || '')
 
         const response = await api.put(
           `http://127.0.0.1:8000/api/v1/document/${updateData.id}`,
@@ -304,6 +304,24 @@ export const useDocumentStore = defineStore('documentStore', {
         throw error
       } finally {
         this.isLoading = false
+      }
+    },
+
+    async fetchDocCount() {
+      try {
+        const response = await api.get(
+          `http://127.0.0.1:8000/api/v1/document/count_status/${this.departmentId}`,
+        )
+        if (response.status !== 200) {
+          console.error('Failed to fetch document count: ', response.statusText)
+          throw new Error('Failed to fetch document count')
+        }
+        const data = await response.data
+        console.log(data)
+        this.countStatus = data
+      } catch (error) {
+        console.error('Error fetching document count:', error)
+        throw error
       }
     },
   },

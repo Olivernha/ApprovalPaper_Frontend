@@ -60,11 +60,11 @@ const unfiledCount = computed(() => {
 })
 
 const filedCount = computed(() => {
-  return store.getFiledDocuments.length
+  return store.getFiledDocumentsCount
 })
 
 const suspendedCount = computed(() => {
-  return store.getSuspendedDocuments.length
+  return store.getSuspendedDocumentsCount
 })
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <!-- Edit Modal -->
-  <EditAdminDocumentForm v-if="userStore.isAdmin && isEditModalOpen" :isModalOpen="isEditModalOpen"
+  <EditAdminDocumentForm v-if="userStore.isAdmin && isEditModalOpen" :isModalOpen="isEditModalOpen" @delete="deleteDocument"
     :document="selectedDocument" @close="closeEditModal" @save="handleDocumentUpdate" />
   <EditDocumentModal v-else-if="isEditModalOpen" :document="selectedDocument" @close="closeEditModal"
     @update="handleDocumentUpdate" />
@@ -114,7 +114,7 @@ const deleteDocument = async (doc: any) => {
   if (confirm('Are you sure you want to delete this document?')) {
     try {
       await documentStore.deleteDocument(doc.id)
-    } catch (error) {  
+    } catch (error) {
       console.error('Failed to delete document:', error)
     }
   }
