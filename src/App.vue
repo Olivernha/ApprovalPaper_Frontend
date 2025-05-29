@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AppHeader from './components/layout/AppHeader.vue'
+import AppFooter from './components/layout/AppFooter.vue'
 import TableData from './components/data-table/TableData.vue'
 import AddDocumentForm from './components/form/AddDocumentForm.vue'
 import { onMounted } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useDocumentTypeStore } from './stores/documentTypeStore'
 import { useUserStore } from '@/stores/userStore'
-import axios from 'axios'
+// import axios from 'axios'
 import DocumentSummaryCard from './components/DocumentSummaryCard.vue'
 
 const userStore = useUserStore()
@@ -38,6 +39,7 @@ onMounted(async () => {
         </div>
       </div>
     </main>
+    <AppFooter />
   </div>
 </template>
 

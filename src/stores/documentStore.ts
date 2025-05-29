@@ -1,5 +1,5 @@
 import api from '@/lib/axios'
-import type { ApiDocument, DocumentState, UpdateDocument } from '@/types/documentTypes'
+import type { ApiDocument, DocumentState, UpdateDocument, Document } from '@/types/documentTypes'
 import { defineStore } from 'pinia'
 export const useDocumentStore = defineStore('documentStore', {
   state: (): DocumentState => ({
@@ -25,10 +25,12 @@ export const useDocumentStore = defineStore('documentStore', {
       const totalPages = Math.ceil(state.totalDocuments / state.rowsPerPage)
       return `Page ${state.currentPage} of ${totalPages} — Total ${state.totalDocuments} records`
     },
-    isAllSelected: (state) => {
+    isAllSelected: (state: { documents: Document[]; selectedItems: string[] }) => {
       return (
         state.documents.length > 0 &&
-        state.documents.every((doc) => state.selectedItems.includes(doc))
+        state.documents.every((doc: Document) =>
+          state.selectedItems.includes(doc.id?.toString() || ''),
+        )
       )
     },
 
@@ -256,7 +258,7 @@ export const useDocumentStore = defineStore('documentStore', {
       if (this.isAllSelected) {
         this.selectedItems = []
       } else {
-        this.selectedItems = this.documents.map((doc) => doc.id)
+        this.selectedItems = this.documents.map((doc) => doc.id || '')
       }
     },
 

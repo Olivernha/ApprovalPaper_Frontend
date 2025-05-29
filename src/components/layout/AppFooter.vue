@@ -3,3 +3,4 @@
     <p>Tuas Power Generation Pte. Ltd</p>
   </footer>
 </template>
+<script setup lang="ts"></script>

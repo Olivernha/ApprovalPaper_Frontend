@@ -5,7 +5,7 @@ export interface Document {
   created_by: string
   created_date: string
   status: string
-  _id?: string
+  id?: string
   document_type_id?: string
   department_id?: string
   file_id?: string
@@ -31,6 +31,7 @@ export interface DocumentState {
   hasPrev: boolean
   isLoading: boolean
   selectedItems: string[]
+  countStatus: { [key: string]: number }
 }
 export type ApiDocument = {
   ref_no: string
