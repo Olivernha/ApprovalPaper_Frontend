@@ -1,8 +1,9 @@
 {
   "files": [],
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strict": true,              // enables all strict type checking options
+    "noImplicitAny": true,       // errors on variables without a type
+    "suppressImplicitAnyIndexErrors": false
   },
   
   "references": [

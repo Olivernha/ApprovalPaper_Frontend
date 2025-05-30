@@ -134,19 +134,6 @@ const clearSearch = async () => {
   documentStore.searchQuery = ''
 }
 
-// const exportDocuments = async () => {
-//   isExporting.value = true
-//   try {
-//     // Simulate export process
-//     await new Promise((resolve) => setTimeout(resolve, 2000))
-//     console.log('Documents exported successfully')
-//     // Add actual export logic here
-//   } catch (error) {
-//     console.error('Error exporting documents:', error)
-//   } finally {
-//     isExporting.value = false
-//   }
-// }
 </script>
 
 <style scoped>

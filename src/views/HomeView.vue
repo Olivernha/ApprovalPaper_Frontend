@@ -6,7 +6,7 @@ import { Search, Folder, Building, SearchX } from 'lucide-vue-next'
 const departmentStore = useDepartmentStore()
 const departments = computed(() => departmentStore.departments)
 const searchQuery = ref('')
-// Use computed for reactive loading state
+
 const isLoading = computed(() => departmentStore.isLoading)
 
 const filteredDepartments = computed(() => {
@@ -87,7 +87,7 @@ const filteredDepartments = computed(() => {
 
         <div class="p-5">
           <router-link
-            :to="{ name: 'Department', params: { id: department._id } }" 
+            :to="{ name: 'Department', params: { id: department._id } }"
             class="block w-full bg-[#697b9d] hover:bg-[#5a6b8a] text-white text-center py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#697b9d] focus:ring-offset-2"
           >
             View Documents

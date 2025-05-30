@@ -10,10 +10,10 @@ export const useDocumentTypeStore = defineStore('documentTypeStore', {
   actions: {
     async fetchDocumentTypes(id: string) {
       try {
-        this.departmentId = id // Set the department ID
-        this.isLoading = true // Set loading state
+        this.departmentId = id 
+        this.isLoading = true
         const response = await api.get(
-          `http://127.0.0.1:8000/api/v1/department/${id}/document-types`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/department/${id}/document-types`,
         )
         if (response.status !== 200) {
           console.error('Failed to fetch document types: ', response.statusText)

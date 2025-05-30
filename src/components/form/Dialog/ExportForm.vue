@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useDocumentStore } from '@/stores/documentStore' // Add this import
+import { computed,  reactive, ref } from 'vue'
+import { useDocumentStore } from '@/stores/documentStore'
+import { useRoute } from 'vue-router'
+import { useDepartmentStore } from '@/stores/departmentStore'
+import type { ApiDocument } from '@/types/documentTypes';
 
 defineProps<{
   showExportModal: boolean
 }>()
 const emit = defineEmits(['close'])
 
-// Add store reference
 const documentStore = useDocumentStore()
 
 const exportOptions = reactive({
@@ -16,6 +18,17 @@ const exportOptions = reactive({
   includeTimestamp: true,
 })
 const exportFormat = ref('csv')
+
+const route = useRoute()
+const departmentStore = useDepartmentStore()
+
+const departmentName = computed(() => {
+  if (route.params.id && typeof route.params.id === 'string') {
+    const department = departmentStore.departments.find((dept) => dept._id === route.params.id)
+    return department?.name || 'Unknown Department'
+  }
+  return ''
+})
 
 function convertToCSV(data: any[], includeHeaders = true) {
   const headers = [
@@ -28,12 +41,8 @@ function convertToCSV(data: any[], includeHeaders = true) {
     'Date',
     'Status',
   ]
-
   let csv = ''
-
-  if (includeHeaders) {
-    csv += headers.join(',') + '\n'
-  }
+  if (includeHeaders) csv += headers.join(',') + '\n'
 
   data.forEach((row) => {
     const values = [
@@ -58,15 +67,18 @@ function convertToJSON(data: any[], includeTimestamp = true) {
     totalRecords: data.length,
     documents: data,
   }
-
   return JSON.stringify(exportData, null, 2)
 }
 
 function generatePDFContent(data: any[]) {
+  const title = departmentName.value
+    ? `${departmentName.value} Documents Export`
+    : 'Documents Export'
+
   let html = `
     <html>
       <head>
-        <title>TPG Documents Export</title>
+        <title>${title}</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; }
           h1 { color: #697b9d; }
@@ -79,10 +91,9 @@ function generatePDFContent(data: any[]) {
         </style>
       </head>
       <body>
-        <h1>TPG Approval Registration System - Documents Export</h1>
+        <h1>${title}</h1>
         <p>Export Date: ${new Date().toLocaleDateString()}</p>
         <p>Total Documents: ${data.length}</p>
-
         <table>
           <thead>
             <tr>
@@ -129,7 +140,6 @@ function generatePDFContent(data: any[]) {
       </body>
     </html>
   `
-
   return html
 }
 
@@ -145,13 +155,17 @@ function downloadFile(content: string, filename: string, mimeType: string) {
   window.URL.revokeObjectURL(url)
 }
 
-function handleExport() {
+async function handleExport() {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+  await documentStore.fetchAllDocuments(route.params.id as string)
 
-  // Get data from store instead of undefined 'documents' variable
   const dataToExport = exportOptions.selectedOnly
-    ? documentStore.documents.filter((doc) => documentStore.isSelected(doc.id))
-    : documentStore.documents
+    ? documentStore.selectedCount > 0
+      ? documentStore.exportDocuments.filter((doc: ApiDocument) =>
+          documentStore.isSelected(doc._id || '')
+        )
+      : []
+    : documentStore.exportDocuments
 
   if (dataToExport.length === 0) {
     alert('No documents to export!')
@@ -162,29 +176,25 @@ function handleExport() {
 
   switch (exportFormat.value) {
     case 'csv':
-      filename = `tpg-documents-${timestamp}.csv`
+      filename = `${departmentName.value}-documents-${timestamp}.csv`
       content = convertToCSV(dataToExport, exportOptions.includeHeaders)
       mimeType = 'text/csv'
       break
-
     case 'excel':
-      filename = `tpg-documents-${timestamp}.csv` // Changed to .csv since we're not creating real Excel
+      filename = `${departmentName.value}-documents-${timestamp}.csv`
       content = convertToCSV(dataToExport, exportOptions.includeHeaders)
-      mimeType = 'text/csv' // Changed to proper CSV MIME type
+      mimeType = 'text/csv'
       break
-
     case 'json':
-      filename = `tpg-documents-${timestamp}.json`
+      filename = `${departmentName.value}-documents-${timestamp}.json`
       content = convertToJSON(dataToExport, exportOptions.includeTimestamp)
       mimeType = 'application/json'
       break
-
     case 'pdf':
-      filename = `tpg-documents-${timestamp}.html`
+      filename = `${departmentName.value}-documents-${timestamp}.html`
       content = generatePDFContent(dataToExport)
       mimeType = 'text/html'
       break
-
     default:
       console.error('Unsupported export format')
       return
@@ -193,7 +203,9 @@ function handleExport() {
   downloadFile(content, filename, mimeType)
 
   alert(
-    `${dataToExport.length} documents exported successfully as ${exportFormat.value.toUpperCase()}!`,
+    `${dataToExport.length} document${
+      dataToExport.length !== 1 ? 's' : ''
+    } exported successfully as ${exportFormat.value.toUpperCase()}!`,
   )
 
   emit('close')

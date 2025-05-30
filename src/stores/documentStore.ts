@@ -3,6 +3,7 @@ import type { ApiDocument, DocumentState, UpdateDocument, Document } from '@/typ
 import { defineStore } from 'pinia'
 export const useDocumentStore = defineStore('documentStore', {
   state: (): DocumentState => ({
+    exportDocuments:[],
     documents: [],
     searchQuery: '',
     selectedDocumentType: '',
@@ -52,6 +53,25 @@ export const useDocumentStore = defineStore('documentStore', {
     },
   },
   actions: {
+    async fetchAllDocuments(departmentId: string) {
+      this.isLoading = true
+      try {
+        const response = await api.get(
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document`,
+        )
+        if (response.status !== 200) {
+          console.error('Failed to fetch document  ', response.statusText)
+          throw new Error('Failed to fetch document')
+        }
+        const data = await response.data.filter((doc: ApiDocument) => doc.department_id === departmentId)
+        console.log(data)
+        this.exportDocuments = data
+        this.isLoading = false
+      } catch (error) {
+        console.error('Error fetching document:', error)
+        throw error
+      }
+    },
     async fetchDocuments() {
       this.isLoading = true
       try {
@@ -77,9 +97,12 @@ export const useDocumentStore = defineStore('documentStore', {
           sort_order: sortOrder.toString(),
         })
 
-        const response = await api.get(`http://127.0.0.1:8000/api/v1/document/paginated`, {
-          params,
-        })
+        const response = await api.get(
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/paginated`,
+          {
+            params,
+          },
+        )
 
         if (response.status !== 200) {
           console.error('Failed to fetch document  ', response.statusText)
@@ -144,7 +167,7 @@ export const useDocumentStore = defineStore('documentStore', {
     async addDocument(newDoc: { document_type_id: string; title: string; department_id?: string }) {
       try {
         this.isLoading = true
-        const response = await api.post('http://127.0.0.1:8000/api/v1/document/', {
+        const response = await api.post(import.meta.env.VITE_BACKEND_API_BASE_URL + '/document/', {
           document_type_id: newDoc.document_type_id,
           title: newDoc.title,
           ...(newDoc.department_id && { department_id: newDoc.department_id }),
@@ -154,7 +177,7 @@ export const useDocumentStore = defineStore('documentStore', {
           throw new Error(`Failed to add document: ${response.statusText}`)
         }
 
-        // Refetch documents to update the list
+
         await this.fetchDocuments()
 
         this.isLoading = false
@@ -180,7 +203,7 @@ export const useDocumentStore = defineStore('documentStore', {
         }
 
         const response = await api.put(
-          `http://127.0.0.1:8000/api/v1/document/${updateData.id}`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/${updateData.id}`,
           formData,
         )
         if (response.status !== 200) {
@@ -200,7 +223,7 @@ export const useDocumentStore = defineStore('documentStore', {
     async downloadAttachment(documentId: string) {
       try {
         const response = await api.get(
-          `http://127.0.0.1:8000/api/v1/document/download/${documentId}`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/download/${documentId}`,
           {
             responseType: 'blob',
           },
@@ -212,7 +235,7 @@ export const useDocumentStore = defineStore('documentStore', {
         const link = document.createElement('a')
         link.href = downloadUrl
 
-        // Try extracting the filename from response headers if available
+
         const contentDisposition = response.headers['content-disposition']
         let filename = 'downloaded_file'
         if (contentDisposition) {
@@ -233,7 +256,9 @@ export const useDocumentStore = defineStore('documentStore', {
     async deleteDocument(documentId: string) {
       this.isLoading = true
       try {
-        const response = await api.delete(`http://127.0.0.1:8000/api/v1/document/${documentId}`)
+        const response = await api.delete(
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/${documentId}`,
+        )
         if (response.status !== 200) {
           console.error('Failed to delete document: ', response.statusText)
           throw new Error('Failed to delete document')
@@ -276,23 +301,16 @@ export const useDocumentStore = defineStore('documentStore', {
       let url = ''
       let payload: { status?: string; document_ids?: string[] } = {}
       if (action !== 'Delete') {
-        url = 'http://127.0.0.1:8000/api/v1/document/bulk-update-status'
+        url = import.meta.env.VITE_BACKEND_API_BASE_URL + '/document/bulk-update-status'
         payload = {
           status: action,
           document_ids: [...this.selectedItems],
         }
       } else {
-        url = 'http://127.0.0.1:8000/api/v1/document/bulk-delete'
+        url = import.meta.env.VITE_BACKEND_API_BASE_URL + '/document/bulk-delete'
         payload = {
           document_ids: [...this.selectedItems],
         }
-      }
-      {
-        // "document_ids": [
-        //   "66488b368a6801e71d70dfe9",
-        //   "66488b368a6801e71d70dfea"
-        // ],
-        // "status": "Filed"
       }
       console.log('Applying bulk action:', action, 'on documents:', this.selectedItems)
       try {
@@ -313,7 +331,7 @@ export const useDocumentStore = defineStore('documentStore', {
     async fetchDocCount(departmentId: string) {
       try {
         const response = await api.get(
-          `http://127.0.0.1:8000/api/v1/document/count_status/${departmentId}`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/count_status/${departmentId}`,
         )
         if (response.status !== 200) {
           console.error('Failed to fetch document count: ', response.statusText)

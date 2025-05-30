@@ -12,7 +12,7 @@ export const useUserStore = defineStore('userStore', {
     },
     async checkIsAdmin() {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/admin/${this.username}`)
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/users/admin/${this.username}`)
         const data = await response.json()
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)

@@ -32,7 +32,7 @@ const filedDateForInput = ref(formatForDateTimeLocal(props.document.filed_date))
 const editForm = reactive({
   title: props.document.title,
   created_by: props.document.created_by,
-  filed_by: props.document?.filed_by || '', // Optional chaining for backward compatibility
+  filed_by: props.document?.filed_by || '',  
   created_date: props.document.created_date,
   filed_date: props.document.filed_date,
   attachment: props.document.attachment,

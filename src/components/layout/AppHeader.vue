@@ -19,7 +19,7 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const departmentStore = useDepartmentStore()
 
-// Check if departments are still loading
+
 const isLoading = computed(() => departmentStore.isLoading)
 
 // Get department name from store

@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import AppFooter from './components/layout/AppFooter.vue'
 import AppHeader from './components/layout/AppHeader.vue'
-// import axios from 'axios'
+
 
 
 const departmentStore = useDepartmentStore()
@@ -12,18 +12,9 @@ const departmentStore = useDepartmentStore()
 const isLoading = ref(true)
 
 onMounted(async () => {
-  // const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
-  //   withCredentials: true,
-  // })
-  // const data = response.data.substring(8)
-  // userStore.setUsername(data)
-  // userStore.setUsername('anichols')
-
+  isLoading.value = true
   try {
     await departmentStore.fetchDepartments()
-    // await documentTypeStore.fetchDocumentTypes()
-    // await documentStore.fetchDocuments()
-    // await userStore.checkIsAdmin()
   } finally {
     isLoading.value = false
   }

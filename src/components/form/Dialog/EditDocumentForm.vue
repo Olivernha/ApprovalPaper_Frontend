@@ -86,7 +86,7 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const fileInputRef = () => fileInput.value as HTMLInputElement | null
 const isLoading = ref(false)
 
-// Watch for document changes to populate form
+
 watch(
   () => props.document,
   (newDoc) => {
@@ -99,7 +99,7 @@ watch(
 )
 
 function closeModal() {
-  // Reset form
+
   editTitle.value = ''
   selectedFile.value = null
   emit('close')

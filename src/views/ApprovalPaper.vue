@@ -6,6 +6,7 @@ import { onMounted } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useDocumentTypeStore } from '@/stores/documentTypeStore'
 import { useUserStore } from '@/stores/userStore'
+import axios from 'axios'
 const documentStore = useDocumentStore()
 const documentTypeStore = useDocumentTypeStore()
 const userStore = useUserStore()
@@ -14,16 +15,16 @@ const props = defineProps<{
 }>()
 
 onMounted(async () => {
-  // const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
-  //   withCredentials: true,
-  // })
-  // const data = response.data.substring(8)
-  // userStore.setUsername(data)
-  userStore.setUsername('alvinloh')
+  const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
+    withCredentials: true,
+  })
+  const data = response.data.substring(8)
+  userStore.setUsername(data)
   documentStore.departmentId = props.id
   await documentTypeStore.fetchDocumentTypes(props.id)
   await documentStore.fetchDocuments()
   await userStore.checkIsAdmin()
+
 })
 </script>
 

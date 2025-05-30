@@ -23,7 +23,7 @@ export const useDepartmentStore = defineStore('departmentStore', {
     async fetchDepartments() {
       try {
         this.isLoading = true
-        const response = await api.get('http://127.0.0.1:8000/api/v1/department')
+        const response = await api.get(import.meta.env.VITE_BACKEND_API_BASE_URL + '/department')
         if (response.status !== 200) {
           console.error('Failed to fetch departments: ', response.statusText)
           throw new Error('Failed to fetch departments')

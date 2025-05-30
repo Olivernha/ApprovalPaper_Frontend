@@ -111,7 +111,7 @@
     <!-- Success message -->
     <div
       v-if="showSuccessMessage"
-      class="absolute -bottom-15 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2 text-green-700 animate-fade-in"
+      class="absolute top-5 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2 text-green-700 animate-fade-in"
     >
       <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path

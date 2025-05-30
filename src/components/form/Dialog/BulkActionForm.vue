@@ -77,7 +77,7 @@ const resetSelection = () => {
 const applyAction = () => {
   emit('applyAction', selectedAction.value);
   selectedAction.value = 'Not Filed'; // Reset after applying
-  closeModal(); // Close modal after applying
+  closeModal(); 
 };
 
 </script>

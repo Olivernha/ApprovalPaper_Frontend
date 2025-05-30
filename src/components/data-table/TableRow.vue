@@ -74,7 +74,7 @@
         </button>
         <button
           @click="deleteDocument(doc)"
-          v-if="userStore.isAdmin"
+          v-if="userStore.isAdmin || userStore.username === doc.created_by"
           class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
         >
           <TrashIcon class="w-4 h-4" />
@@ -106,7 +106,7 @@ const documents = computed(() => documentStore.documents)
 const username = computed(() => userStore.username)
 const activeDropdown = ref<number | null>(null)
 const isEditModalOpen = ref(false)
-const selectedDocument = ref<any | null>(null) // Temporarily use 'any' if the type mismatch persists
+const selectedDocument = ref<any | null>(null)
 const shouldDropdownOpenUpward = (index: number) => {
   return index >= documents.value.length - 2
 }
@@ -122,7 +122,7 @@ const toggleDropdown = (index: number) => {
 const openEditModal = (doc: ApiDocument) => {
   selectedDocument.value = doc
   isEditModalOpen.value = true
-  activeDropdown.value = null // Close dropdown
+  activeDropdown.value = null 
 }
 
 const closeEditModal = () => {
@@ -141,7 +141,7 @@ const handleDocumentUpdate = async (updatedData: any) => {
     closeEditModal()
   } catch (error) {
     console.error('Failed to update document:', error)
-    // Handle error (show toast, etc.)
+
   }
 }
 

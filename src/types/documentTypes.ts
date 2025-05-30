@@ -16,6 +16,7 @@ export interface Document {
 }
 
 export interface DocumentState {
+  exportDocuments: Document[]
   documents: Document[]
   searchQuery: string
   selectedDocumentType: string
