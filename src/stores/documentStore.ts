@@ -7,7 +7,7 @@ export const useDocumentStore = defineStore('documentStore', {
     searchQuery: '',
     selectedDocumentType: '',
     statusFilter: '',
-    departmentId: import.meta.env.VITE_DEPARTMENT_ID || '', // Verify this ID
+    departmentId: '',
     rowsPerPage: 10,
     currentPage: 1,
     sortField: 'created_date',
@@ -118,7 +118,7 @@ export const useDocumentStore = defineStore('documentStore', {
         this.hasNext = false
         this.hasPrev = false
       } finally {
-        await this.fetchDocCount()
+        await this.fetchDocCount(this.departmentId)
         this.isLoading = false
       }
     },
@@ -266,7 +266,8 @@ export const useDocumentStore = defineStore('documentStore', {
       this.selectedItems = []
     },
 
-    isSelected(documentId: string) {
+    isSelected(documentId: string | null) {
+      if (!documentId) return false
       return this.selectedItems.includes(documentId)
     },
 
@@ -309,10 +310,10 @@ export const useDocumentStore = defineStore('documentStore', {
       }
     },
 
-    async fetchDocCount() {
+    async fetchDocCount(departmentId: string) {
       try {
         const response = await api.get(
-          `http://127.0.0.1:8000/api/v1/document/count_status/${this.departmentId}`,
+          `http://127.0.0.1:8000/api/v1/document/count_status/${departmentId}`,
         )
         if (response.status !== 200) {
           console.error('Failed to fetch document count: ', response.statusText)

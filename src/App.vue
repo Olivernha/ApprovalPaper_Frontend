@@ -1,46 +1,45 @@
 <script setup lang="ts">
-import AppHeader from './components/layout/AppHeader.vue'
+import { onMounted, ref } from 'vue'
+import { useDepartmentStore } from '@/stores/departmentStore'
 import AppFooter from './components/layout/AppFooter.vue'
-import TableData from './components/data-table/TableData.vue'
-import AddDocumentForm from './components/form/AddDocumentForm.vue'
-import { onMounted } from 'vue'
-import { useDocumentStore } from '@/stores/documentStore'
-import { useDocumentTypeStore } from './stores/documentTypeStore'
-import { useUserStore } from '@/stores/userStore'
+import AppHeader from './components/layout/AppHeader.vue'
 // import axios from 'axios'
-import DocumentSummaryCard from './components/DocumentSummaryCard.vue'
 
-const userStore = useUserStore()
-const documentStore = useDocumentStore()
-const documentTypeStore = useDocumentTypeStore()
+
+const departmentStore = useDepartmentStore()
+
+
+const isLoading = ref(true)
+
 onMounted(async () => {
   // const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
   //   withCredentials: true,
   // })
   // const data = response.data.substring(8)
   // userStore.setUsername(data)
-  userStore.setUsername('anichols')
-  await documentTypeStore.fetchDocumentTypes()
-  await documentStore.fetchDocuments()
-  await userStore.checkIsAdmin()
+  // userStore.setUsername('anichols')
+
+  try {
+    await departmentStore.fetchDepartments()
+    // await documentTypeStore.fetchDocumentTypes()
+    // await documentStore.fetchDocuments()
+    // await userStore.checkIsAdmin()
+  } finally {
+    isLoading.value = false
+  }
 })
 </script>
-
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
     <AppHeader />
-
-    <main class="flex-1 p-8 bg-[#f5f5f5]">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <TableData />
-        <div class="flex flex-col gap-6">
-          <AddDocumentForm />
-          <DocumentSummaryCard />
-        </div>
-      </div>
-    </main>
+    <router-view />
     <AppFooter />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Additional custom styles */
+.router-link-active {
+  @apply bg-[#5a6b8a];
+}
+</style>

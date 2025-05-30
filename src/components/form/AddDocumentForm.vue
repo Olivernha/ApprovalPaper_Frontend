@@ -171,7 +171,9 @@ import type { NewDocument } from '@/types/documentTypes'
 
 const documentTypeStore = useDocumentTypeStore()
 const store = useDocumentStore()
-
+const props = defineProps<{
+  id: string
+}>()
 // Loading states
 const isSubmitting = ref(false)
 const isInitialLoading = ref(true)
@@ -179,7 +181,7 @@ const showSuccessMessage = ref(false)
 const submitError = ref('')
 
 const newDocument = ref<NewDocument>({
-  department_id: import.meta.env.VITE_DEPARTMENT_ID || '',
+  department_id: props.id,
   document_type_id: '',
   title: '',
 })
@@ -187,7 +189,7 @@ const newDocument = ref<NewDocument>({
 // Initialize component
 onMounted(async () => {
   try {
-    await documentTypeStore.fetchDocumentTypes()
+    await documentTypeStore.fetchDocumentTypes(props.id)
   } catch (error) {
     console.error('Error initializing form:', error)
   } finally {
@@ -239,7 +241,7 @@ const addDocument = async () => {
 
 const retryLoadDocumentTypes = async () => {
   try {
-    await documentTypeStore.fetchDocumentTypes()
+    await documentTypeStore.fetchDocumentTypes(props.id)
   } catch (error) {
     console.error('Error retrying document types:', error)
   }

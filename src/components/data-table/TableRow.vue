@@ -1,19 +1,36 @@
 <template>
   <!-- Edit Modal -->
-  <EditAdminDocumentForm v-if="userStore.isAdmin && isEditModalOpen" :isModalOpen="isEditModalOpen" @delete="deleteDocument"
-    :document="selectedDocument" @close="closeEditModal" @save="handleDocumentUpdate" />
-  <EditDocumentModal v-else-if="isEditModalOpen" :document="selectedDocument" @close="closeEditModal"
-    @update="handleDocumentUpdate" />
+  <EditAdminDocumentForm
+    v-if="userStore.isAdmin && isEditModalOpen"
+    :isModalOpen="isEditModalOpen"
+    @delete="deleteDocument"
+    :document="selectedDocument"
+    @close="closeEditModal"
+    @save="handleDocumentUpdate"
+  />
+  <EditDocumentModal
+    v-else-if="isEditModalOpen"
+    :document="selectedDocument"
+    @close="closeEditModal"
+    @update="handleDocumentUpdate"
+  />
 
-  <tr v-for="(doc, index) in documents" :key="doc.ref_no"
+  <tr
+    v-for="(doc, index) in documents"
+    :key="doc.id"
     class="border-b border-b-gray-300 hover:bg-gray-50 transition-colors"
-    :class="{ 'bg-blue-50': documentStore.isSelected(doc.id) }">
+    :class="{ 'bg-blue-50': documentStore.isSelected(doc.id || '') }"
+  >
     <!-- Selection Checkbox -->
     <td class="py-3 px-4">
       <div class="flex items-center">
-        <input type="checkbox" :checked="documentStore.isSelected(doc.id)" @change="documentStore.toggleSelect(doc.id)"
+        <input
+          type="checkbox"
+          :checked="documentStore.isSelected(doc.id || '')"
+          @change="documentStore.toggleSelect(doc.id || '')"
           :disabled="documentStore.isLoading"
-          class="w-4 h-4 rounded border-gray-300 text-[#A41F36] focus:ring-[#A41F36] disabled:opacity-50 accent-[#A41F36]" />
+          class="w-4 h-4 rounded border-gray-300 text-[#A41F36] focus:ring-[#A41F36] disabled:opacity-50 accent-[#A41F36]"
+        />
       </div>
     </td>
     <td class="py-3 px-4">{{ doc.ref_no }}</td>
@@ -25,38 +42,56 @@
       <DocumentStatus :status="doc.status" :isLoading="documentStore.isLoading" />
     </td>
     <td class="py-3 px-4 text-right relative">
-      <button v-if="username === doc.created_by || userStore.isAdmin" :disabled="documentStore.isLoading"
+      <button
+        v-if="username === doc.created_by || userStore.isAdmin"
+        :disabled="documentStore.isLoading"
         @click="toggleDropdown(index)"
-        class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100">
+        class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
+      >
         <MoreVerticalIcon class="h-4 w-4" />
       </button>
-      <div v-if="activeDropdown === index" :class="[
-        'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-10 min-w-[160px] right-0',
-        shouldDropdownOpenUpward(index) ? 'bottom-full mb-1' : 'top-full mt-1'
-      ]">
-        <button @click="openEditModal(doc)"
-          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer">
+      <div
+        v-if="activeDropdown === index"
+        :class="[
+          'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-10 min-w-[160px] right-0',
+          shouldDropdownOpenUpward(index) ? 'bottom-full mb-1' : 'top-full mt-1',
+        ]"
+      >
+        <button
+          @click="openEditModal(doc)"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer"
+        >
           <EditIcon class="w-4 h-4" />
           Edit
         </button>
-        <button @click="downloadDocument(doc)" v-if="doc.file_id"
-          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer">
+        <button
+          @click="downloadDocument(doc)"
+          v-if="doc.file_id"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer"
+        >
           <EyeIcon class="w-4 h-4" />
           Download attachment
         </button>
-        <button @click="deleteDocument(doc)" v-if="userStore.isAdmin"
-          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer">
+        <button
+          @click="deleteDocument(doc)"
+          v-if="userStore.isAdmin"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
+        >
           <TrashIcon class="w-4 h-4" />
           Delete
         </button>
       </div>
-
     </td>
   </tr>
 </template>
 
 <script setup lang="ts">
-import { MoreVertical as MoreVerticalIcon, Edit as EditIcon, Eye as EyeIcon, Trash as TrashIcon } from 'lucide-vue-next'
+import {
+  MoreVertical as MoreVerticalIcon,
+  Edit as EditIcon,
+  Eye as EyeIcon,
+  Trash as TrashIcon,
+} from 'lucide-vue-next'
 import DocumentStatus from './DataStatus.vue'
 import EditDocumentModal from '@/components/form/Dialog/EditDocumentForm.vue'
 import EditAdminDocumentForm from '@/components/form/Dialog/EditAdminDocumentForm.vue'
@@ -99,7 +134,7 @@ const handleDocumentUpdate = async (updatedData: any) => {
   try {
     const updatedDocument = {
       ...selectedDocument.value,
-      ...updatedData // Keep existing file if not updated
+      ...updatedData, // Keep existing file if not updated
     }
 
     await documentStore.updateDocument(updatedDocument)
