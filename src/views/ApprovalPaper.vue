@@ -15,16 +15,18 @@ const props = defineProps<{
 }>()
 
 onMounted(async () => {
-  const response = await axios.get(`http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`, {
-    withCredentials: true,
-  })
+  const response = await axios.get(
+    `http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`,
+    {
+      withCredentials: true,
+    },
+  )
   const data = response.data.substring(8)
   userStore.setUsername(data)
   documentStore.departmentId = props.id
   await documentTypeStore.fetchDocumentTypes(props.id)
   await documentStore.fetchDocuments()
   await userStore.checkIsAdmin()
-
 })
 </script>
 
@@ -34,7 +36,7 @@ onMounted(async () => {
       <TableData />
       <div class="flex flex-col gap-6">
         <AddDocumentForm :id="props.id" />
-        <DocumentSummaryCard />
+        <DocumentSummaryCard v-if="userStore.isAdmin" />
       </div>
     </div>
   </main>
