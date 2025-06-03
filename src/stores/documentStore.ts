@@ -166,6 +166,7 @@ export const useDocumentStore = defineStore('documentStore', {
 
     async addDocument(newDoc: { document_type_id: string; title: string; department_id?: string }) {
       try {
+        console.log('Adding new document with data:', newDoc)
         this.isLoading = true
         const response = await api.post(import.meta.env.VITE_BACKEND_API_BASE_URL + '/document/', {
           document_type_id: newDoc.document_type_id,
@@ -179,7 +180,6 @@ export const useDocumentStore = defineStore('documentStore', {
 
 
         await this.fetchDocuments()
-
         this.isLoading = false
       } catch (error) {
         console.error('Error adding document:', error)

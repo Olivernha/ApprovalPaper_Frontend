@@ -171,6 +171,7 @@ import type { NewDocument } from '@/types/documentTypes'
 
 const documentTypeStore = useDocumentTypeStore()
 const store = useDocumentStore()
+
 const props = defineProps<{
   id: string
 }>()
@@ -197,6 +198,7 @@ onMounted(async () => {
   }
 })
 
+
 const addDocument = async () => {
   if (
     !newDocument.value.document_type_id ||
@@ -219,11 +221,11 @@ const addDocument = async () => {
       department_id: newDocument.value.department_id,
     })
 
-    // Reset form on success
+    // Reset form on success, preserving department_id from props
     newDocument.value = {
       document_type_id: '',
       title: '',
-      department_id: import.meta.env.VITE_DEPARTMENT_ID || '',
+      department_id: props.id, // Keep department_id tied to props.id
     }
 
     // Show success message
