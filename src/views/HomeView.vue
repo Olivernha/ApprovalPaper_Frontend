@@ -1,19 +1,79 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
-import { Search, Folder, Building, SearchX } from 'lucide-vue-next'
+import { useDocumentStore } from '@/stores/documentStore'
+import { Search, Folder, Building, SearchX, Star, FileText } from 'lucide-vue-next'
 
 const departmentStore = useDepartmentStore()
+const documentStore = useDocumentStore()
 const departments = computed(() => departmentStore.departments)
 const searchQuery = ref('')
 
 const isLoading = computed(() => departmentStore.isLoading)
+
+// Store document counts for each department
+const departmentCounts = reactive<Record<string, {
+  unfiled: number,
+  filed: number,
+  suspended: number,
+  total: number
+}>>({})
 
 const filteredDepartments = computed(() => {
   if (!searchQuery.value) return departments.value
 
   const query = searchQuery.value.toLowerCase()
   return departments.value.filter((dept) => dept.name.toLowerCase().includes(query))
+})
+
+// Helper function to get document counts for a specific department
+const getDepartmentDocumentCounts = (departmentId: string) => {
+  return departmentCounts[departmentId] || {
+    unfiled: 0,
+    filed: 0,
+    suspended: 0,
+    total: 0
+  }
+}
+
+
+const fetchAllDepartmentCounts = async () => {
+  for (const department of departments.value) {
+    try {
+      await documentStore.fetchDocCount(department._id)
+      const counts = documentStore.countStatus
+
+      departmentCounts[department._id] = {
+        unfiled: counts['Not Filed'] || 0,
+        filed: counts['Filed'] || 0,
+        suspended: counts['Suspended'] || 0,
+        total: (counts['Not Filed'] || 0) + (counts['Filed'] || 0) + (counts['Suspended'] || 0)
+      }
+    } catch (error) {
+      console.error(`Error fetching counts for department ${department._id}:`, error)
+      departmentCounts[department._id] = {
+        unfiled: 0,
+        filed: 0,
+        suspended: 0,
+        total: 0
+      }
+    }
+  }
+}
+
+// Fetch counts when departments change
+const loadDepartmentCounts = async () => {
+  if (departments.value.length > 0) {
+    await fetchAllDepartmentCounts()
+  }
+}
+
+watch(departments, () => {
+  loadDepartmentCounts()
+}, { immediate: true })
+
+onMounted(() => {
+  loadDepartmentCounts()
 })
 </script>
 
@@ -74,8 +134,9 @@ const filteredDepartments = computed(() => {
         :key="department._id"
         class="bg-white rounded-lg border border-[#eaecf0] overflow-hidden hover:shadow-md transition-shadow duration-200"
       >
+        <!-- Department Header -->
         <div class="p-5 border-b border-[#eaecf0]">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 mb-3">
             <div
               class="w-10 h-10 bg-[#f9fafb] rounded-full flex items-center justify-center text-[#697b9d]"
             >
@@ -83,8 +144,55 @@ const filteredDepartments = computed(() => {
             </div>
             <h3 class="text-lg font-medium text-[#344054]">{{ department.name }}</h3>
           </div>
+
+          <!-- File Status Summary -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2">
+                <FileText class="w-3 h-3 text-[#667085]" />
+                <span class="text-[#667085]">Total Documents</span>
+              </div>
+              <span class="font-medium text-[#344054]">
+                {{ getDepartmentDocumentCounts(department._id).total }}
+              </span>
+            </div>
+
+            <!-- Status breakdown -->
+            <div class="grid grid-cols-3 gap-2 mt-3">
+              <div class="text-center p-2 bg-[#fef7f0] rounded-md">
+                <div class="flex items-center justify-center gap-1 mb-1">
+                  <Star class="w-3 h-3 text-[#a41f36]" />
+                </div>
+                <div class="text-xs text-[#667085]">Unfiled</div>
+                <div class="text-sm font-medium text-[#344054]">
+                  {{ getDepartmentDocumentCounts(department._id).unfiled }}
+                </div>
+              </div>
+
+              <div class="text-center p-2 bg-[#f0fdf4] rounded-md">
+                <div class="flex items-center justify-center gap-1 mb-1">
+                  <Star class="w-3 h-3 text-[#14ba6d]" />
+                </div>
+                <div class="text-xs text-[#667085]">Filed</div>
+                <div class="text-sm font-medium text-[#344054]">
+                  {{ getDepartmentDocumentCounts(department._id).filed }}
+                </div>
+              </div>
+
+              <div class="text-center p-2 bg-[#f9fafb] rounded-md">
+                <div class="flex items-center justify-center gap-1 mb-1">
+                  <Star class="w-3 h-3 text-[#667085]" />
+                </div>
+                <div class="text-xs text-[#667085]">Suspended</div>
+                <div class="text-sm font-medium text-[#344054]">
+                  {{ getDepartmentDocumentCounts(department._id).suspended }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
+        <!-- Action Button -->
         <div class="p-5">
           <router-link
             :to="{ name: 'Department', params: { id: department._id } }"

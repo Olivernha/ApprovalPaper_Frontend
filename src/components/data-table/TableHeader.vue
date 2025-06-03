@@ -8,7 +8,7 @@
     <div class="ml-auto flex items-center gap-2">
       <div class="relative">
         <input
-          v-model="documentStore.searchQuery"
+          v-model.lazy="documentStore.searchQuery"
           type="text"
           placeholder="Search..."
           :disabled="documentStore.isLoading"

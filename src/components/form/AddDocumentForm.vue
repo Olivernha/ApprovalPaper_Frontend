@@ -221,14 +221,14 @@ const addDocument = async () => {
       department_id: newDocument.value.department_id,
     })
 
-    // Reset form on success, preserving department_id from props
+  
     newDocument.value = {
       document_type_id: '',
       title: '',
-      department_id: props.id, // Keep department_id tied to props.id
+      department_id: props.id,
     }
 
-    // Show success message
+
     showSuccessMessage.value = true
     setTimeout(() => {
       showSuccessMessage.value = false

@@ -37,7 +37,7 @@
     <td class="py-3 px-4">{{ doc.full_ref }}</td>
     <td class="py-3 px-4">{{ doc.title }}</td>
     <td class="py-3 px-4">{{ doc.created_by }}</td>
-    <td class="py-3 px-4">{{ doc.created_date.slice(0, 10) }}</td>
+    <td class="py-3 px-4">{{ formatForDateTimeLocal(doc.created_date) }}</td>
     <td class="py-3">
       <DocumentStatus :status="doc.status" :isLoading="documentStore.isLoading" />
     </td>
@@ -111,6 +111,11 @@ const shouldDropdownOpenUpward = (index: number) => {
   return index >= documents.value.length - 2
 }
 
+const formatForDateTimeLocal = (date: Date | string | undefined): string => {
+  return date ? new Date(date).toLocaleDateString('en-GB') : ''
+}
+
+
 const toggleDropdown = (index: number) => {
   if (activeDropdown.value === index) {
     activeDropdown.value = null
@@ -122,7 +127,7 @@ const toggleDropdown = (index: number) => {
 const openEditModal = (doc: ApiDocument) => {
   selectedDocument.value = doc
   isEditModalOpen.value = true
-  activeDropdown.value = null 
+  activeDropdown.value = null
 }
 
 const closeEditModal = () => {
