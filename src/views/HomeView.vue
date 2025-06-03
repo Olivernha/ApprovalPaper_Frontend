@@ -36,7 +36,7 @@ const getDepartmentDocumentCounts = (departmentId: string) => {
   }
 }
 
-
+// Function to fetch document counts for all departments
 const fetchAllDepartmentCounts = async () => {
   for (const department of departments.value) {
     try {
@@ -68,6 +68,7 @@ const loadDepartmentCounts = async () => {
   }
 }
 
+// Watch for departments to be loaded
 watch(departments, () => {
   loadDepartmentCounts()
 }, { immediate: true })

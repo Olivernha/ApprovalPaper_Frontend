@@ -3,17 +3,13 @@
     <tr class="border-b border-b-gray-300 text-left text-sm text-gray-500">
       <!-- Bulk Selection Checkbox -->
       <th class="py-3 px-4 font-medium w-12">
-        <div class="flex items-center">
+        <div v-if="userStore.userData?.isAdmin" class="flex items-center">
           <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleSelectAll"
             :disabled="isLoading"
             class="w-4 h-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500 disabled:opacity-50 accent-[#A41F36]" />
         </div>
       </th>
-      <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1">
-          RefNo
-        </div>
-      </th>
+
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('ref_no')">
           Full Reference
@@ -57,9 +53,11 @@
 <script setup lang="ts">
 import { ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
+import { useUserStore } from '@/stores/userStore'
 import { computed } from 'vue'
 
 const documentStore = useDocumentStore()
+const userStore = useUserStore()
 
 const isLoading = computed(() => documentStore.isLoading)
 const isAllSelected = computed(() => documentStore.isAllSelected)

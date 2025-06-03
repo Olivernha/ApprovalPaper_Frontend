@@ -1,28 +1,44 @@
 
+import axios from 'axios'
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('userStore', {
   state: () => ({
     username: '',
-    isAdmin: false,
+    userData: null as { full_name: string ; isAdmin: boolean } | null,
   }),
   actions: {
     setUsername(name: string) {
       this.username = name
     },
-    async checkIsAdmin() {
+
+    async fetchUserData() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/users/admin/${this.username}`)
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        this.isAdmin = data // Assuming the API returns an object with isAdmin property
-        return data.isAdmin
+        const bounceRes = await axios.get(
+          `http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+
+        const username = bounceRes.data.substring(8);
+        this.setUsername(username);
+
+        const userRes = await axios.get(
+          `${import.meta.env.VITE_BACKEND_GET_USERS_URL}/${username}`
+        );
+        this.userData = { full_name: userRes.data.name, isAdmin: false };
+
+        const adminRes = await axios.get(
+          `${import.meta.env.VITE_BACKEND_API_BASE_URL}/users/admin/${username}`
+        );
+
+        this.userData.isAdmin = adminRes.data;
+
       } catch (error) {
-        console.error('Error checking admin status:', error)
-        return false
+        console.error('Error fetching user data:', error);
       }
-    },
+    }
   },
 })

@@ -18,7 +18,6 @@ const routes = [
     props: true,
     beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
       const id = to.params.id
-      console.log('Navigating to Department with ID:', id)
       if (id && typeof id === 'string' && isValidObjectId(id)) {
         next()
       } else {

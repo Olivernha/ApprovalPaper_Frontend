@@ -128,7 +128,7 @@ async function applyChanges() {
     if (selectedFile.value) {
       updateData.file = selectedFile.value
     }
-    console.log('Applying changes:', updateData)
+
     emit('update', updateData)
   } catch (error) {
     console.error('Error applying changes:', error)

@@ -181,6 +181,7 @@ const isInitialLoading = ref(true)
 const showSuccessMessage = ref(false)
 const submitError = ref('')
 
+store.departmentId = props.id
 const newDocument = ref<NewDocument>({
   department_id: props.id,
   document_type_id: '',
@@ -213,7 +214,7 @@ const addDocument = async () => {
   submitError.value = ''
 
   try {
-    console.log('Adding document:', newDocument.value)
+
 
     await store.addDocument({
       document_type_id: newDocument.value.document_type_id,
@@ -221,7 +222,7 @@ const addDocument = async () => {
       department_id: newDocument.value.department_id,
     })
 
-  
+
     newDocument.value = {
       document_type_id: '',
       title: '',

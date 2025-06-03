@@ -1,9 +1,12 @@
+// Enhanced document store with color tracking
 import api from '@/lib/axios'
 import type { ApiDocument, DocumentState, UpdateDocument, Document } from '@/types/documentTypes'
 import { defineStore } from 'pinia'
+import { useUserStore } from './userStore'
+
 export const useDocumentStore = defineStore('documentStore', {
   state: (): DocumentState => ({
-    exportDocuments:[],
+    exportDocuments: [],
     documents: [],
     searchQuery: '',
     selectedDocumentType: '',
@@ -20,12 +23,17 @@ export const useDocumentStore = defineStore('documentStore', {
     isLoading: false,
     selectedItems: [] as string[],
     countStatus: {},
+    // New properties for row coloring
+    recentlyAddedDocuments: new Set() as Set<string>,
+    newDocumentColor: 'bg-green-50 border-green-200'
   }),
+
   getters: {
     paginationText: (state) => {
       const totalPages = Math.ceil(state.totalDocuments / state.rowsPerPage)
       return `Page ${state.currentPage} of ${totalPages} — Total ${state.totalDocuments} records`
     },
+
     isAllSelected: (state: { documents: Document[]; selectedItems: string[] }) => {
       return (
         state.documents.length > 0 &&
@@ -41,7 +49,6 @@ export const useDocumentStore = defineStore('documentStore', {
 
     selectedCount: (state) => state.selectedItems.length,
 
-    // all documents count by status
     getUnfiledDocumentsCount: (state) => {
       return state.countStatus['Not Filed'] || 0
     },
@@ -51,8 +58,32 @@ export const useDocumentStore = defineStore('documentStore', {
     getSuspendedDocumentsCount: (state) => {
       return state.countStatus['Suspended'] || 0
     },
+
+    getDocumentRowClass: (state) => (documentId: string) => {
+      if (state.recentlyAddedDocuments.has(documentId)) {
+        return `${state.newDocumentColor} animate-pulse-once`
+      }
+      return ''
+    }
   },
+
   actions: {
+    // Method to mark document as recently added
+    markDocumentAsNew(documentId: string) {
+      // Mark as recently added
+      this.recentlyAddedDocuments.add(documentId)
+
+      // Remove from recently added after 10 seconds
+      setTimeout(() => {
+        this.recentlyAddedDocuments.delete(documentId)
+      }, 10000)
+    },
+
+    // Clear new document markings
+    clearNewDocumentMarkings() {
+      this.recentlyAddedDocuments.clear()
+    },
+
     async fetchAllDocuments(departmentId: string) {
       this.isLoading = true
       try {
@@ -64,7 +95,7 @@ export const useDocumentStore = defineStore('documentStore', {
           throw new Error('Failed to fetch document')
         }
         const data = await response.data.filter((doc: ApiDocument) => doc.department_id === departmentId)
-        console.log(data)
+
         this.exportDocuments = data
         this.isLoading = false
       } catch (error) {
@@ -72,12 +103,12 @@ export const useDocumentStore = defineStore('documentStore', {
         throw error
       }
     },
+
     async fetchDocuments() {
       this.isLoading = true
       try {
         const fieldMap: { [key: string]: string } = {
           ref_no: 'ref_no',
-          full_ref: 'full_ref',
           title: 'title',
           created_by: 'created_by',
           created_date: 'created_date',
@@ -113,8 +144,7 @@ export const useDocumentStore = defineStore('documentStore', {
           throw new Error('Invalid JSON response')
         }
         this.documents = (data.documents || []).map((doc: ApiDocument) => ({
-          ref_no: doc.ref_no.split('/').pop() || '',
-          full_ref: doc.ref_no.substring(0, doc.ref_no.lastIndexOf('/')) || '',
+          ref_no: doc.ref_no,
           title: doc.title,
           created_by: doc.created_by,
           created_date: doc.created_date,
@@ -141,10 +171,10 @@ export const useDocumentStore = defineStore('documentStore', {
         this.hasNext = false
         this.hasPrev = false
       } finally {
-        await this.fetchDocCount(this.departmentId)
         this.isLoading = false
       }
     },
+
     sortBy(field: string) {
       if (this.sortField === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
@@ -153,11 +183,13 @@ export const useDocumentStore = defineStore('documentStore', {
         this.sortDirection = 'asc'
       }
     },
+
     nextPage() {
       if (this.hasNext) {
         this.currentPage++
       }
     },
+
     previousPage() {
       if (this.hasPrev) {
         this.currentPage--
@@ -166,18 +198,25 @@ export const useDocumentStore = defineStore('documentStore', {
 
     async addDocument(newDoc: { document_type_id: string; title: string; department_id?: string }) {
       try {
-        console.log('Adding new document with data:', newDoc)
         this.isLoading = true
         const response = await api.post(import.meta.env.VITE_BACKEND_API_BASE_URL + '/document/', {
           document_type_id: newDoc.document_type_id,
           title: newDoc.title,
           ...(newDoc.department_id && { department_id: newDoc.department_id }),
+          created_by: useUserStore().userData?.full_name
         })
 
         if (response.status !== 201) {
           throw new Error(`Failed to add document: ${response.statusText}`)
         }
 
+        // Get the new document ID from response
+        const newDocumentId = response.data.id || response.data._id
+
+        // Mark the new document as recently added
+        if (newDocumentId) {
+          this.markDocumentAsNew(newDocumentId)
+        }
 
         await this.fetchDocuments()
         this.isLoading = false
@@ -187,8 +226,8 @@ export const useDocumentStore = defineStore('documentStore', {
       }
     },
 
+    // Rest of your existing methods remain the same...
     async updateDocument(updateData: UpdateDocument) {
-      console.log('Updating document with data:', updateData)
       this.isLoading = true
       try {
         const formData = new FormData()
@@ -235,7 +274,6 @@ export const useDocumentStore = defineStore('documentStore', {
         const link = document.createElement('a')
         link.href = downloadUrl
 
-
         const contentDisposition = response.headers['content-disposition']
         let filename = 'downloaded_file'
         if (contentDisposition) {
@@ -263,6 +301,10 @@ export const useDocumentStore = defineStore('documentStore', {
           console.error('Failed to delete document: ', response.statusText)
           throw new Error('Failed to delete document')
         }
+
+        // Remove from recently added when document is deleted
+        this.recentlyAddedDocuments.delete(documentId)
+
         await this.fetchDocuments()
       } catch (error) {
         console.error('Error deleting document:', error)
@@ -271,6 +313,7 @@ export const useDocumentStore = defineStore('documentStore', {
         this.isLoading = false
       }
     },
+
     toggleSelect(documentId: string) {
       const index = this.selectedItems.indexOf(documentId)
       if (index > -1) {
@@ -279,6 +322,7 @@ export const useDocumentStore = defineStore('documentStore', {
         this.selectedItems.push(documentId)
       }
     },
+
     toggleSelectAll() {
       if (this.isAllSelected) {
         this.selectedItems = []
@@ -311,8 +355,13 @@ export const useDocumentStore = defineStore('documentStore', {
         payload = {
           document_ids: [...this.selectedItems],
         }
+
+        // Remove from recently added for deleted documents
+        this.selectedItems.forEach(id => {
+          this.recentlyAddedDocuments.delete(id)
+        })
       }
-      console.log('Applying bulk action:', action, 'on documents:', this.selectedItems)
+
       try {
         const response = await api.post(url, payload)
         if (response.status !== 200) {
@@ -338,7 +387,7 @@ export const useDocumentStore = defineStore('documentStore', {
           throw new Error('Failed to fetch document count')
         }
         const data = await response.data
-        console.log(data)
+
         this.countStatus = data
       } catch (error) {
         console.error('Error fetching document count:', error)

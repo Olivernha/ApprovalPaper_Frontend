@@ -13,6 +13,7 @@ api.interceptors.request.use(
     const userStore = useUserStore()
     if (userStore.username) {
       config.headers['X-User-Name'] = userStore.username
+      config.headers['X-User-Full-Name'] = userStore.userData?.full_name
     }
     return config
   },

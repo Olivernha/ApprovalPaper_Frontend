@@ -33,10 +33,11 @@ export interface DocumentState {
   isLoading: boolean
   selectedItems: string[]
   countStatus: { [key: string]: number }
+  recentlyAddedDocuments: Set<string>
+  newDocumentColor: string
 }
 export type ApiDocument = {
   ref_no: string
-  full_ref?: string
   title: string
   created_by: string
   created_date: string

@@ -23,13 +23,13 @@ export const useDepartmentStore = defineStore('departmentStore', {
     async fetchDepartments() {
       try {
         this.isLoading = true
-        const response = await api.get(import.meta.env.VITE_BACKEND_API_BASE_URL + '/department')
+        const response = await api.get(import.meta.env.VITE_BACKEND_API_BASE_URL + '/department/')
         if (response.status !== 200) {
           console.error('Failed to fetch departments: ', response.statusText)
           throw new Error('Failed to fetch departments')
         }
         const data = await response.data
-        console.log(data)
+
         this.departments = data
       } catch (error) {
         console.error('Error fetching departments:', error)

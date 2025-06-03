@@ -1,7 +1,7 @@
 <template>
   <!-- Edit Modal -->
   <EditAdminDocumentForm
-    v-if="userStore.isAdmin && isEditModalOpen"
+    v-if="userStore.userData?.isAdmin && isEditModalOpen"
     :isModalOpen="isEditModalOpen"
     @delete="deleteDocument"
     :document="selectedDocument"
@@ -18,12 +18,16 @@
   <tr
     v-for="(doc, index) in documents"
     :key="doc.id"
-    class="border-b border-b-gray-300 hover:bg-gray-50 transition-colors"
-    :class="{ 'bg-blue-50': documentStore.isSelected(doc.id || '') }"
+    :class="[
+      'border-b border-b-gray-300 transition-all duration-500 hover:bg-gray-50',
+      documentStore.getDocumentRowClass(doc.id || ''),
+      documentStore.recentlyAddedDocuments.has(doc.id || '') ? 'animate-highlight' : '',
+      { 'bg-blue-50': documentStore.isSelected(doc.id || '') }
+    ]"
   >
     <!-- Selection Checkbox -->
     <td class="py-3 px-4">
-      <div class="flex items-center">
+      <div v-if="userStore.userData?.isAdmin" class="flex items-center">
         <input
           type="checkbox"
           :checked="documentStore.isSelected(doc.id || '')"
@@ -34,7 +38,6 @@
       </div>
     </td>
     <td class="py-3 px-4">{{ doc.ref_no }}</td>
-    <td class="py-3 px-4">{{ doc.full_ref }}</td>
     <td class="py-3 px-4">{{ doc.title }}</td>
     <td class="py-3 px-4">{{ doc.created_by }}</td>
     <td class="py-3 px-4">{{ formatForDateTimeLocal(doc.created_date) }}</td>
@@ -43,7 +46,7 @@
     </td>
     <td class="py-3 px-4 text-right relative">
       <button
-        v-if="username === doc.created_by || userStore.isAdmin"
+        v-if="username === doc.created_by || userStore.userData?.isAdmin"
         :disabled="documentStore.isLoading"
         @click="toggleDropdown(index)"
         class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
@@ -74,7 +77,7 @@
         </button>
         <button
           @click="deleteDocument(doc)"
-          v-if="userStore.isAdmin || userStore.username === doc.created_by"
+          v-if="userStore.userData?.isAdmin || username === doc.created_by"
           class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
         >
           <TrashIcon class="w-4 h-4" />
@@ -103,7 +106,7 @@ import type { ApiDocument } from '@/types/documentTypes'
 const documentStore = useDocumentStore()
 const userStore = useUserStore()
 const documents = computed(() => documentStore.documents)
-const username = computed(() => userStore.username)
+const username = computed(() => userStore.userData?.full_name || '')
 const activeDropdown = ref<number | null>(null)
 const isEditModalOpen = ref(false)
 const selectedDocument = ref<any | null>(null)
@@ -188,5 +191,42 @@ onUnmounted(() => {
   transition-property: color, background-color, border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+@keyframes highlight {
+  0% {
+    background-color: rgba(34, 197, 94, 0.1); /* Green */
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.2); /* Green */
+    transform: scale(1.01);
+  }
+  100% {
+    background-color: rgba(34, 197, 94, 0.05); /* Green */
+    transform: scale(1);
+  }
+}
+
+.animate-highlight {
+  animation: highlight 2s ease-in-out;
+}
+
+.animate-pulse-once {
+  animation: pulse 1s ease-in-out 1;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 500ms;
 }
 </style>

@@ -48,12 +48,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { Star } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
 
 const store = useDocumentStore()
 const isLoading = computed(() => store.isLoading)
+const props = defineProps<{
+  id: string
+}>()
+
+const fetchDocumentData = async () => {
+  await store.fetchDocCount(props.id)
+}
+
+onMounted(fetchDocumentData)
+
+watch(() => props.id, async (newId, oldId) => {
+  if (newId !== oldId) {
+    await fetchDocumentData()
+  }
+})
 
 const unfiledCount = computed(() => {
   return store.getUnfiledDocumentsCount

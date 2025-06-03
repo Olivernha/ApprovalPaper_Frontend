@@ -127,7 +127,6 @@ watch(
       }
     }
   },
-  { immediate: true },
 )
 
 const clearSearch = async () => {
