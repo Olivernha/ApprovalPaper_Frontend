@@ -13,12 +13,9 @@ export const useUserStore = defineStore('userStore', {
 
     async fetchUserData() {
       try {
-        const bounceRes = await axios.get(
-          `http://tuasapp02/AuthBounce?host=${import.meta.env.VITE_FRONTEND_API_URL}`,
-          {
-            withCredentials: true,
-          },
-        )
+        const bounceRes = await axios.get(`${import.meta.env.VITE_BACKEND_API_USERNAME_URL}`, {
+          withCredentials: true,
+        })
 
         const username = bounceRes.data.substring(8)
         this.setUsername(username)
@@ -35,5 +32,10 @@ export const useUserStore = defineStore('userStore', {
         console.error('Error fetching user data:', error)
       }
     },
+    // fetchUserData() {
+    //   //MOCKED DATA
+    //   this.setUsername('alvinloh')
+    //   this.userData = { full_name: 'Mocked User', isAdmin: true }
+    // },
   },
 })

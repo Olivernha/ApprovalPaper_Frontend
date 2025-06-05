@@ -3,21 +3,26 @@ import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import { useDocumentStore } from '@/stores/documentStore'
 import { Search, Folder, Building, SearchX, Star, FileText } from 'lucide-vue-next'
-
+import { useLoadingBar } from '@/composables/useLoadingBar'
 const departmentStore = useDepartmentStore()
 const documentStore = useDocumentStore()
 const departments = computed(() => departmentStore.departments)
 const searchQuery = ref('')
 
 const isLoading = computed(() => departmentStore.isLoading)
-
+const { start: startLoading, finish: finishLoading } = useLoadingBar()
 // Store document counts for each department
-const departmentCounts = reactive<Record<string, {
-  unfiled: number,
-  filed: number,
-  suspended: number,
-  total: number
-}>>({})
+const departmentCounts = reactive<
+  Record<
+    string,
+    {
+      unfiled: number
+      filed: number
+      suspended: number
+      total: number
+    }
+  >
+>({})
 
 const filteredDepartments = computed(() => {
   if (!searchQuery.value) return departments.value
@@ -28,12 +33,14 @@ const filteredDepartments = computed(() => {
 
 // Helper function to get document counts for a specific department
 const getDepartmentDocumentCounts = (departmentId: string) => {
-  return departmentCounts[departmentId] || {
-    unfiled: 0,
-    filed: 0,
-    suspended: 0,
-    total: 0
-  }
+  return (
+    departmentCounts[departmentId] || {
+      unfiled: 0,
+      filed: 0,
+      suspended: 0,
+      total: 0,
+    }
+  )
 }
 
 // Function to fetch document counts for all departments
@@ -47,7 +54,7 @@ const fetchAllDepartmentCounts = async () => {
         unfiled: counts['Not Filed'] || 0,
         filed: counts['Filed'] || 0,
         suspended: counts['Suspended'] || 0,
-        total: (counts['Not Filed'] || 0) + (counts['Filed'] || 0) + (counts['Suspended'] || 0)
+        total: (counts['Not Filed'] || 0) + (counts['Filed'] || 0) + (counts['Suspended'] || 0),
       }
     } catch (error) {
       console.error(`Error fetching counts for department ${department._id}:`, error)
@@ -55,7 +62,7 @@ const fetchAllDepartmentCounts = async () => {
         unfiled: 0,
         filed: 0,
         suspended: 0,
-        total: 0
+        total: 0,
       }
     }
   }
@@ -64,14 +71,23 @@ const fetchAllDepartmentCounts = async () => {
 // Fetch counts when departments change
 const loadDepartmentCounts = async () => {
   if (departments.value.length > 0) {
-    await fetchAllDepartmentCounts()
+    startLoading()
+    try {
+      await fetchAllDepartmentCounts()
+    } finally {
+      finishLoading()
+    }
   }
 }
 
 // Watch for departments to be loaded
-watch(departments, () => {
-  loadDepartmentCounts()
-}, { immediate: true })
+watch(
+  departments,
+  () => {
+    loadDepartmentCounts()
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   loadDepartmentCounts()
@@ -160,32 +176,32 @@ onMounted(() => {
 
             <!-- Status breakdown -->
             <div class="grid grid-cols-3 gap-2 mt-3">
-              <div class="text-center p-2 bg-[#fef7f0] rounded-md">
+              <div class="text-center p-2 bg-gradient-to-br from-[#fef2f2] to-[#fecaca] rounded-md">
                 <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#a41f36]" />
+                  <Star class="w-3 h-3 text-[#ef4444]" />
                 </div>
-                <div class="text-xs text-[#667085]">Unfiled</div>
-                <div class="text-sm font-medium text-[#344054]">
+                <div class="text-xs text-[#991b1b]">Unfiled</div>
+                <div class="text-sm font-medium text-[#1f2937]">
                   {{ getDepartmentDocumentCounts(department._id).unfiled }}
                 </div>
               </div>
 
-              <div class="text-center p-2 bg-[#f0fdf4] rounded-md">
+              <div class="text-center p-2 bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] rounded-md">
                 <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#14ba6d]" />
+                  <Star class="w-3 h-3 text-[#10b981]" />
                 </div>
-                <div class="text-xs text-[#667085]">Filed</div>
-                <div class="text-sm font-medium text-[#344054]">
+                <div class="text-xs text-[#065f46]">Filed</div>
+                <div class="text-sm font-medium text-[#1f2937]">
                   {{ getDepartmentDocumentCounts(department._id).filed }}
                 </div>
               </div>
 
-              <div class="text-center p-2 bg-[#f9fafb] rounded-md">
+              <div class="text-center p-2 bg-gradient-to-br from-[#e0e7ff] to-[#c7d2fe] rounded-md">
                 <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#667085]" />
+                  <Star class="w-3 h-3 text-[#6366f1]" />
                 </div>
-                <div class="text-xs text-[#667085]">Suspended</div>
-                <div class="text-sm font-medium text-[#344054]">
+                <div class="text-xs text-[#3730a3]">Suspended</div>
+                <div class="text-sm font-medium text-[#1f2937]">
                   {{ getDepartmentDocumentCounts(department._id).suspended }}
                 </div>
               </div>

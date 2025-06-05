@@ -1,4 +1,12 @@
-import { createWebHistory, createRouter, type RouteLocationNormalized, type NavigationGuardNext } from 'vue-router'
+import {
+  createWebHistory,
+  createRouter,
+  type RouteLocationNormalized,
+  type NavigationGuardNext,
+} from 'vue-router'
+import { useLoadingBar } from '@/composables/useLoadingBar'
+
+const { start, finish, fail } = useLoadingBar()
 
 const isValidObjectId = (id: string) => {
   const objectIdRegex = /^[0-9a-fA-F]{24}$/
@@ -16,7 +24,11 @@ const routes = [
     name: 'Department',
     component: () => import('../views/ApprovalPaper.vue'),
     props: true,
-    beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    beforeEnter: (
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized,
+      next: NavigationGuardNext,
+    ) => {
       const id = to.params.id
       if (id && typeof id === 'string' && isValidObjectId(id)) {
         next()
@@ -25,7 +37,6 @@ const routes = [
       }
     },
   },
-  // Catch all route for 404 pages
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
@@ -36,6 +47,23 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+// Navigation guards for loading bar
+router.beforeEach((to, from, next) => {
+  // Only show loading bar if we're actually changing routes
+  if (to.path !== from.path) {
+    start()
+  }
+  next()
+})
+
+router.afterEach(() => {
+  finish()
+})
+
+router.onError(() => {
+  fail()
 })
 
 export default router
