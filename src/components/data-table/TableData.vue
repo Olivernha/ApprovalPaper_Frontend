@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1">
+  <div class="flex-1 w-full xl:w-2/3">
     <div class="bg-white rounded-md shadow-sm p-4 relative">
       <TableHeader />
       <BulkActionsBar />

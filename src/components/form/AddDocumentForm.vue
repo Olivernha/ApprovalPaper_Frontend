@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-full lg:h-92 lg:w-80 bg-white rounded-lg p-6">
+  <div class="relative w-full h-full xl:h-96  xl:w-72 2xl:w-96 bg-white rounded-lg p-6">
     <h2 class="text-2xl font-medium mb-2">Add a new document</h2>
     <p class="text-gray-600 text-sm mb-6">
       Fill in the fields below and press add to generate a reference number

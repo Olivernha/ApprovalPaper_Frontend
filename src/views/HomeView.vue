@@ -2,7 +2,7 @@
 import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import { useDocumentStore } from '@/stores/documentStore'
-import { Search, Folder, Building, SearchX, Star, FileText } from 'lucide-vue-next'
+import { Search, Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useLoadingBar } from '@/composables/useLoadingBar'
 const departmentStore = useDepartmentStore()
 const documentStore = useDocumentStore()
@@ -175,33 +175,47 @@ onMounted(() => {
             </div>
 
             <!-- Status breakdown -->
-            <div class="grid grid-cols-3 gap-2 mt-3">
-              <div class="text-center p-2 bg-gradient-to-br from-[#fef2f2] to-[#fecaca] rounded-md">
-                <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#ef4444]" />
+            <div class="grid grid-cols-3 gap-3 mt-4">
+              <!-- Enhanced Unfiled Section -->
+              <div class="text-center p-3 bg-gradient-to-br from-[#fef2f2] to-[#fee2e2] rounded-lg border-2 border-[#fca5a5] shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="flex items-center justify-center gap-1 mb-2">
+                  <AlertTriangle class="w-4 h-4 text-[#dc2626]" />
                 </div>
-                <div class="text-xs text-[#991b1b]">Unfiled</div>
-                <div class="text-sm font-medium text-[#1f2937]">
+                <div class="text-xs font-semibold text-[#991b1b] uppercase tracking-wide mb-1">
+                  Unfiled
+                </div>
+                <div class="text-lg font-bold text-[#dc2626] bg-white rounded-md py-1 px-2 shadow-sm">
                   {{ getDepartmentDocumentCounts(department._id).unfiled }}
                 </div>
+                <!-- Attention indicator for unfiled documents -->
+                <div
+                  v-if="getDepartmentDocumentCounts(department._id).unfiled > 0"
+                  class="w-2 h-2 bg-[#dc2626] rounded-full mx-auto mt-2 animate-pulse"
+                ></div>
               </div>
 
-              <div class="text-center p-2 bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] rounded-md">
-                <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#10b981]" />
+              <!-- Filed Section -->
+              <div class="text-center p-3 bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] rounded-lg border border-[#6ee7b7] hover:shadow-sm transition-shadow duration-200">
+                <div class="flex items-center justify-center gap-1 mb-2">
+                  <Star class="w-4 h-4 text-[#059669]" />
                 </div>
-                <div class="text-xs text-[#065f46]">Filed</div>
-                <div class="text-sm font-medium text-[#1f2937]">
+                <div class="text-xs font-medium text-[#065f46] uppercase tracking-wide mb-1">
+                  Filed
+                </div>
+                <div class="text-lg font-bold text-[#059669]">
                   {{ getDepartmentDocumentCounts(department._id).filed }}
                 </div>
               </div>
 
-              <div class="text-center p-2 bg-gradient-to-br from-[#e0e7ff] to-[#c7d2fe] rounded-md">
-                <div class="flex items-center justify-center gap-1 mb-1">
-                  <Star class="w-3 h-3 text-[#6366f1]" />
+              <!-- Suspended Section -->
+              <div class="text-center p-3 bg-gradient-to-br from-[#e0e7ff] to-[#c7d2fe] rounded-lg border border-[#a5b4fc] hover:shadow-sm transition-shadow duration-200">
+                <div class="flex items-center justify-center gap-1 mb-2">
+                  <Star class="w-4 h-4 text-[#4f46e5]" />
                 </div>
-                <div class="text-xs text-[#3730a3]">Suspended</div>
-                <div class="text-sm font-medium text-[#1f2937]">
+                <div class="text-xs font-medium text-[#3730a3] uppercase tracking-wide mb-1">
+                  Suspended
+                </div>
+                <div class="text-lg font-bold text-[#4f46e5]">
                   {{ getDepartmentDocumentCounts(department._id).suspended }}
                 </div>
               </div>

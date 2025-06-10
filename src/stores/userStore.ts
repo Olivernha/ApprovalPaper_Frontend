@@ -24,7 +24,7 @@ export const useUserStore = defineStore('userStore', {
         this.userData = { full_name: userRes.data.name, isAdmin: false }
 
         const adminRes = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API_BASE_URL}/users/admin/${username}`,
+          `${import.meta.env.VITE_BACKEND_API_BASE_URL}/admins/user/${username}`,
         )
 
         this.userData.isAdmin = adminRes.data

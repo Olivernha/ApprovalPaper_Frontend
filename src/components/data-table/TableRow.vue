@@ -16,15 +16,15 @@
   />
 
   <tr
-    v-for="(doc, index) in documents"
-    :key="doc.id"
-    :class="[
-      'border-b border-b-gray-300 transition-all duration-500 hover:bg-gray-50',
-      documentStore.getDocumentRowClass(doc.id || ''),
-      documentStore.recentlyAddedDocuments.has(doc.id || '') ? 'animate-highlight' : '',
-      { 'bg-blue-50': documentStore.isSelected(doc.id || '') }
-    ]"
-  >
+  v-for="(doc, index) in documents"
+  :key="doc.id"
+  :class="[
+    'border-b border-b-gray-300 transition-all duration-500 hover:bg-gray-50 xl:text-sm 2xl:text-base',
+    documentStore.getDocumentRowClass(doc.id || ''),
+    documentStore.recentlyAddedDocuments.has(doc.id || '') ? 'animate-highlight' : '',
+    { 'bg-blue-50': documentStore.isSelected(doc.id || '') }
+  ]"
+>
     <!-- Selection Checkbox -->
     <td class="py-3 px-4">
       <div v-if="userStore.userData?.isAdmin" class="flex items-center">
@@ -39,6 +39,8 @@
     </td>
     <td class="py-3 px-4">{{ doc.ref_no }}</td>
     <td class="py-3 px-4">{{ doc.title }}</td>
+    <td class="py-3 px-4">{{ doc.filed_by }}</td>
+    <td class="py-3 px-4">{{ formatForDateTimeLocal(doc.filed_date) }}</td>
     <td class="py-3 px-4">{{ doc.created_by }}</td>
     <td class="py-3 px-4">{{ formatForDateTimeLocal(doc.created_date) }}</td>
     <td class="py-3">
