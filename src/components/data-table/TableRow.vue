@@ -144,7 +144,7 @@ const handleDocumentUpdate = async (updatedData: any) => {
   try {
     const updatedDocument = {
       ...selectedDocument.value,
-      ...updatedData, // Keep existing file if not updated
+      ...updatedData,
     }
 
     await documentStore.updateDocument(updatedDocument)

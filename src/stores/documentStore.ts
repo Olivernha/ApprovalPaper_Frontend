@@ -76,7 +76,7 @@ export const useDocumentStore = defineStore('documentStore', {
       // Remove from recently added after 10 seconds
       setTimeout(() => {
         this.recentlyAddedDocuments.delete(documentId)
-      }, 10000)
+      }, 100000)
     },
 
     // Clear new document markings
@@ -94,7 +94,10 @@ export const useDocumentStore = defineStore('documentStore', {
           console.error('Failed to fetch document  ', response.statusText)
           throw new Error('Failed to fetch document')
         }
-        const data = await response.data.filter((doc: ApiDocument) => doc.department_id === departmentId)
+        const data = await response.data.filter((doc: ApiDocument) =>
+          doc.department_id === departmentId &&
+          (!this.selectedDocumentType || doc.document_type_id === this.selectedDocumentType)
+        )
 
         this.exportDocuments = data
         this.isLoading = false
@@ -226,7 +229,6 @@ export const useDocumentStore = defineStore('documentStore', {
       }
     },
 
-    // Rest of your existing methods remain the same...
     async updateDocument(updateData: UpdateDocument) {
       this.isLoading = true
       try {

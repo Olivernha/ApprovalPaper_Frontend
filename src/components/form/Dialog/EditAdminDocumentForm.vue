@@ -32,7 +32,7 @@ const filedDateForInput = ref(formatForDateTimeLocal(props.document.filed_date))
 const editForm = reactive({
   title: props.document.title,
   created_by: props.document.created_by,
-  filed_by: props.document?.filed_by || '',  
+  filed_by: props.document?.filed_by || '',
   created_date: props.document.created_date,
   filed_date: props.document.filed_date,
   attachment: props.document.attachment,
@@ -51,14 +51,14 @@ watch(
   (newAction) => {
     if (newAction === 'Filed') {
       filedDateForInput.value = formatForDateTimeLocal(new Date())
-      editForm.filed_by = useStore.username
+      editForm.filed_by = useStore.userData?.full_name
     }
     if (newAction === 'Not Filed') {
       filedDateForInput.value = ''
       editForm.filed_by = ''
     }
     if (newAction === 'Suspended') {
-      editForm.filed_by = useStore.username
+      editForm.filed_by = useStore.userData?.full_name
     }
   },
 )
