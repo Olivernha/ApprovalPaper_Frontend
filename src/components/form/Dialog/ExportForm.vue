@@ -194,11 +194,6 @@ async function handleExport() {
     let filename: string, content: string, mimeType: string
 
     switch (exportFormat.value) {
-      case 'csv':
-        filename = `${departmentName.value}-documents-${timestamp}.csv`
-        content = convertToCSV(dataToExport, exportOptions.includeHeaders)
-        mimeType = 'text/csv'
-        break
       case 'excel':
         filename = `${departmentName.value}-documents-${timestamp}.csv`
         content = convertToCSV(dataToExport, exportOptions.includeHeaders)
@@ -294,16 +289,6 @@ async function handleExport() {
           <div>
             <label class="text-sm font-medium text-[#344054] mb-2 block">Export Format</label>
             <div class="space-y-2">
-              <label class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  v-model="exportFormat"
-                  value="csv"
-                  class="text-[#697b9d]"
-                  :disabled="isExporting"
-                />
-                <span class="text-[#344054]">CSV (Comma Separated Values)</span>
-              </label>
               <label class="flex items-center gap-2">
                 <input
                   type="radio"

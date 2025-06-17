@@ -55,10 +55,10 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          'hover:bg-gray-100 hover:shadow-sm',
-          isEditing(doc.id, 'title') ? 'bg-transparent p-0' : ''
+          isEditing(doc.id, 'title') ? 'bg-transparent p-0' : '',
+          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : ''
         ]"
-        @dblclick="startEditing(doc.id, 'title')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'title')"
       >
         <textarea
           v-if="isEditing(doc.id, 'title') "
@@ -82,7 +82,7 @@
         />
         <div v-else class="flex items-center justify-between w-full">
           <span class="block">{{ doc.title }}</span>
-          <span class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+          <span v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
         </div>
 
         <!-- Tooltip -->
@@ -106,10 +106,10 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          'hover:bg-gray-100 hover:shadow-sm',
+          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
           isEditing(doc.id, 'filed_by') ? 'bg-transparent p-0' : ''
         ]"
-        @dblclick="startEditing(doc.id, 'filed_by')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'filed_by')"
       >
         <input
           v-if="isEditing(doc.id, 'filed_by') && doc.status === 'Filed'"
@@ -134,7 +134,7 @@
         />
         <div v-else class="flex items-center justify-between w-full">
           <span class="block">{{ doc.filed_by }}</span>
-          <span class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+          <span v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
         </div>
 
         <!-- Tooltip -->
@@ -158,10 +158,10 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          'hover:bg-gray-100 hover:shadow-sm',
+          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
           isEditing(doc.id, 'filed_date') ? 'bg-transparent p-0' : ''
         ]"
-        @dblclick="startEditing(doc.id, 'filed_date')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'filed_date')"
       >
         <input
           v-if="isEditing(doc.id, 'filed_date') && doc.status === 'Filed'"
@@ -184,7 +184,7 @@
         />
         <div v-else class="flex items-center justify-between w-full">
           <span class="block">{{ formatForDateTimeLocal(doc.filed_date) }}</span>
-          <span class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+          <span v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
         </div>
 
         <!-- Tooltip -->
@@ -208,10 +208,10 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          'hover:bg-gray-100 hover:shadow-sm',
+          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
           isEditing(doc.id, 'created_by') ? 'bg-transparent p-0' : ''
         ]"
-        @dblclick="startEditing(doc.id, 'created_by')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'created_by')"
       >
         <input
           v-if="isEditing(doc.id, 'created_by')"
@@ -236,7 +236,7 @@
         />
         <div v-else class="flex items-center justify-between w-full">
           <span class="block">{{ doc.created_by }}</span>
-          <span class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
         </div>
 
         <!-- Tooltip -->
@@ -260,10 +260,10 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          'hover:bg-gray-100 hover:shadow-sm',
+           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
           isEditing(doc.id, 'created_date') ? 'bg-transparent p-0' : ''
         ]"
-        @dblclick="startEditing(doc.id, 'created_date')"
+        @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'created_date')"
       >
         <input
           v-if="isEditing(doc.id, 'created_date')"
@@ -286,7 +286,7 @@
         />
         <div v-else class="flex items-center justify-between w-full">
           <span class="block">{{ formatForDateTimeLocal(doc.created_date) }}</span>
-          <span class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
         </div>
 
         <!-- Tooltip -->
