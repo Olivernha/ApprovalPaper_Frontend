@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed,  reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useRoute } from 'vue-router'
 import { useDepartmentStore } from '@/stores/departmentStore'
-import type { ApiDocument } from '@/types/documentTypes';
+import type { ApiDocument } from '@/types/documentTypes'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 defineProps<{
   showExportModal: boolean
@@ -11,18 +13,17 @@ defineProps<{
 const emit = defineEmits(['close'])
 
 const documentStore = useDocumentStore()
+const route = useRoute()
+const departmentStore = useDepartmentStore()
 
 const exportOptions = reactive({
   includeHeaders: true,
   selectedOnly: false,
   includeTimestamp: true,
 })
-const exportFormat = ref('csv')
+const exportFormat = ref('')
 const isExporting = ref(false)
 const exportProgress = ref('')
-
-const route = useRoute()
-const departmentStore = useDepartmentStore()
 
 const departmentName = computed(() => {
   if (route.params.id && typeof route.params.id === 'string') {
@@ -39,7 +40,7 @@ const computeBtnDisabled = computed(() => {
 function convertToCSV(data: any[], includeHeaders = true) {
   const headers = [
     'RefNo',
-    'Full Reference',
+
     'Title',
     'Filed By',
     'Filed Date',
@@ -51,15 +52,18 @@ function convertToCSV(data: any[], includeHeaders = true) {
   if (includeHeaders) csv += headers.join(',') + '\n'
 
   data.forEach((row) => {
+    const escapeCSV = (str: string) => {
+      const sanitized = (str || '').replace(/"/g, '""').replace(/[\n\r]/g, ' ') // Remove newlines
+      return `"${sanitized.slice(0, 1000)}"` // Limit to 1000 chars to prevent issues
+    }
     const values = [
-      row.ref_no || row.refNo || '',
-      row.full_ref || row.fullRef || '',
-      `"${row.title || ''}"`,
-      `"${row.filed_by || row.filedBy || ''}"`,
-      row.filed_date || row.filedDate || '',
-      `"${row.created_by || row.createdBy || ''}"`,
-      row.created_date || row.date || '',
-      row.status || '',
+      escapeCSV(row.ref_no || row.refNo || ''),
+      escapeCSV(row.title || ''),
+      escapeCSV(row.filed_by || row.filedBy || ''),
+      escapeCSV(row.filed_date || row.filedDate || ''),
+      escapeCSV(row.created_by || row.createdBy || ''),
+      escapeCSV(row.created_date || row.date || ''),
+      escapeCSV(row.status || ''),
     ]
     csv += values.join(',') + '\n'
   })
@@ -67,87 +71,6 @@ function convertToCSV(data: any[], includeHeaders = true) {
   return csv
 }
 
-function convertToJSON(data: any[], includeTimestamp = true) {
-  const exportData = {
-    ...(includeTimestamp && { exportedAt: new Date().toISOString() }),
-    totalRecords: data.length,
-    documents: data,
-  }
-  return JSON.stringify(exportData, null, 2)
-}
-
-function generatePDFContent(data: any[]) {
-  const title = departmentName.value
-    ? `${departmentName.value} Documents Export`
-    : 'Documents Export'
-
-  let html = `
-    <html>
-      <head>
-        <title>${title}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          h1 { color: #697b9d; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f9fafb; }
-          .status-not-filed { color: #a41f36; }
-          .status-filed { color: #14ba6d; }
-          .status-suspended { color: #667085; }
-        </style>
-      </head>
-      <body>
-        <h1>${title}</h1>
-        <p>Export Date: ${new Date().toLocaleDateString()}</p>
-        <p>Total Documents: ${data.length}</p>
-        <table>
-          <thead>
-            <tr>
-              <th>RefNo</th>
-              <th>Full Reference</th>
-              <th>Title</th>
-              <th>Filed By</th>
-              <th>Filed Date</th>
-              <th>Created By</th>
-              <th>Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-  `
-
-  data.forEach((doc) => {
-    const refNo = doc.ref_no || doc.refNo || ''
-    const fullRef = doc.full_ref || doc.fullRef || ''
-    const title = doc.title || ''
-    const filedBy = doc.filed_by || doc.filedBy || ''
-    const filedDate = doc.filed_date || doc.filedDate || ''
-    const createdBy = doc.created_by || doc.createdBy || ''
-    const date = doc.created_date || doc.date || ''
-    const status = doc.status || ''
-
-    html += `
-      <tr>
-        <td>${refNo}</td>
-        <td>${fullRef}</td>
-        <td>${title}</td>
-        <td>${filedBy}</td>
-        <td>${filedDate}</td>
-        <td>${createdBy}</td>
-        <td>${date}</td>
-        <td class="status-${status.toLowerCase().replace(' ', '-')}">${status}</td>
-      </tr>
-    `
-  })
-
-  html += `
-          </tbody>
-        </table>
-      </body>
-    </html>
-  `
-  return html
-}
 
 function downloadFile(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
@@ -170,14 +93,14 @@ async function handleExport() {
 
     exportProgress.value = 'Fetching documents...'
     await documentStore.fetchAllDocuments(route.params.id as string)
-    console.log(documentStore.exportDocuments)
+    console.log('Fetched documents:', documentStore.exportDocuments)
 
     exportProgress.value = 'Processing documents...'
     const dataToExport = exportOptions.selectedOnly
       ? documentStore.selectedCount > 0
         ? documentStore.exportDocuments.filter((doc: ApiDocument) =>
-            documentStore.isSelected(doc._id || '')
-          )
+          documentStore.isSelected(doc._id || '')
+        )
         : []
       : documentStore.exportDocuments
 
@@ -190,6 +113,18 @@ async function handleExport() {
       return
     }
 
+    console.log('dataToExport:', dataToExport)
+
+    // Limit PDF export to 500 records
+    if (exportFormat.value === 'pdf' && dataToExport.length > 500) {
+      exportProgress.value = 'Too many documents for PDF export (max 500). Use CSV for larger datasets.'
+      setTimeout(() => {
+        isExporting.value = false
+        exportProgress.value = ''
+      }, 3000)
+      return
+    }
+
     exportProgress.value = 'Generating export file...'
     let filename: string, content: string, mimeType: string
 
@@ -198,30 +133,96 @@ async function handleExport() {
         filename = `${departmentName.value}-documents-${timestamp}.csv`
         content = convertToCSV(dataToExport, exportOptions.includeHeaders)
         mimeType = 'text/csv'
-        break
-      case 'json':
-        filename = `${departmentName.value}-documents-${timestamp}.json`
-        content = convertToJSON(dataToExport, exportOptions.includeTimestamp)
-        mimeType = 'application/json'
+        downloadFile(content, filename, mimeType)
         break
       case 'pdf':
-        filename = `${departmentName.value}-documents-${timestamp}.html`
-        content = generatePDFContent(dataToExport)
-        mimeType = 'text/html'
+        filename = `${departmentName.value}-documents-${timestamp}.pdf`
+        exportProgress.value = 'Generating PDF...'
+
+        const pdf = new jsPDF('p', 'mm', 'a4')
+        pdf.setFont('helvetica')
+        pdf.setFontSize(16)
+        pdf.text(`${departmentName.value || 'Documents'} Export`, 10, 10)
+        pdf.setFontSize(12)
+        pdf.text(`Export Date: ${new Date().toLocaleDateString()}`, 10, 20)
+        pdf.text(`Total Documents: ${dataToExport.length}`, 10, 30)
+
+        const columns = [
+          { header: 'RefNo', dataKey: 'refNo' },
+          { header: 'Title', dataKey: 'title' },
+          { header: 'Filed By', dataKey: 'filedBy' },
+          { header: 'Filed Date', dataKey: 'filedDate' },
+          { header: 'Created By', dataKey: 'createdBy' },
+          { header: 'Date', dataKey: 'date' },
+          { header: 'Status', dataKey: 'status' },
+        ]
+
+        const tableData = dataToExport.map(doc => ({
+          refNo: (doc.ref_no || doc.refNo || '').slice(0, 50), // Limit lengths
+          title: (doc.title || '').slice(0, 200), // Limit title to 200 chars
+          filedBy: (doc.filed_by || doc.filedBy || '').slice(0, 50),
+          filedDate: (doc.filed_date || doc.filedDate || '').slice(0, 50),
+          createdBy: (doc.created_by || doc.createdBy || '').slice(0, 50),
+          date: (doc.created_date || doc.date || '').slice(0, 10),
+          status: (doc.status || '').slice(0, 50),
+        }))
+
+        autoTable(pdf, {
+          columns,
+          body: tableData,
+          startY: 40,
+          styles: {
+            fontSize: 10,
+            cellPadding: 2,
+            textColor: [51, 51, 51],
+            overflow: 'linebreak', // Enable word wrapping
+          },
+          headStyles: {
+            fillColor: [240, 240, 240],
+            textColor: [51, 51, 51],
+          },
+          alternateRowStyles: {
+            fillColor: [249, 250, 251],
+          },
+          columnStyles: {
+            title: {
+              cellWidth: 60, // Fixed width for title column (in mm)
+              overflow: 'linebreak', // Wrap long titles
+            },
+            refNo: { cellWidth: 20 },
+            filedBy: { cellWidth: 25 },
+            filedDate: { cellWidth: 25 },
+            createdBy: { cellWidth: 25 },
+            date: { cellWidth: 25 },
+            status: { cellWidth: 20 },
+            textColor: (row: number) => {
+              const status = tableData[row]?.status?.toLowerCase()
+              if (status === 'not filed') return [164, 31, 54]
+              if (status === 'filed') return [20, 186, 109]
+              if (status === 'suspended') return [102, 112, 133]
+              return [51, 51, 51]
+            },
+          },
+          margin: { left: 10, right: 10 },
+          didParseCell: (data) => {
+            if (data.column.dataKey === 'title' && data.cell.text.length > 0) {
+              data.cell.text = data.cell.text.map(text =>
+                text.length > 100 ? text.slice(0, 100) + '...' : text
+              ) // Truncate in display if needed
+            }
+          },
+        })
+
+        pdf.save(filename)
         break
       default:
-        console.error('Unsupported export format')
-        return
+        throw new Error('Unsupported export format')
     }
-
-    exportProgress.value = 'Downloading file...'
-    downloadFile(content, filename, mimeType)
 
     exportProgress.value = 'Export completed!'
     setTimeout(() => {
       emit('close')
     }, 1000)
-
   } catch (error) {
     console.error('Export error:', error)
     exportProgress.value = 'Export failed. Please try again.'
@@ -231,7 +232,6 @@ async function handleExport() {
     }, 3000)
   } finally {
     isExporting.value = false
-    exportProgress.value = ''
   }
 }
 </script>
@@ -269,12 +269,24 @@ async function handleExport() {
 
       <div class="p-4">
         <!-- Loading Overlay -->
-        <div v-if="isExporting" class="absolute inset-0 bg-white bg-opacity-95 flex items-center justify-center z-10 rounded-lg">
+        <div
+          v-if="isExporting"
+          class="absolute inset-0 bg-white bg-opacity-95 flex items-center justify-center z-10 rounded-lg"
+        >
           <div class="text-center">
             <div class="flex items-center justify-center mb-4">
-              <svg class="animate-spin h-8 w-8 text-[#697b9d]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg
+                class="animate-spin h-8 w-8 text-[#697b9d]"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             </div>
             <p class="text-[#344054] font-medium">Exporting Documents...</p>
@@ -293,31 +305,21 @@ async function handleExport() {
                 <input
                   type="radio"
                   v-model="exportFormat"
+                  value="pdf"
+                  class="text-[#697b9d]"
+                  :disabled="isExporting"
+                />
+                <span class="text-[#344054]">PDF Document (.pdf format)</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  v-model="exportFormat"
                   value="excel"
                   class="text-[#697b9d]"
                   :disabled="isExporting"
                 />
                 <span class="text-[#344054]">Excel (.csv format)</span>
-              </label>
-              <label class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  v-model="exportFormat"
-                  value="pdf"
-                  class="text-[#697b9d]"
-                  :disabled="isExporting"
-                />
-                <span class="text-[#344054]">PDF Document (.html format)</span>
-              </label>
-              <label class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  v-model="exportFormat"
-                  value="json"
-                  class="text-[#697b9d]"
-                  :disabled="isExporting"
-                />
-                <span class="text-[#344054]">JSON Data</span>
               </label>
             </div>
           </div>
@@ -342,7 +344,7 @@ async function handleExport() {
                   :disabled="isExporting"
                 />
                 <span class="text-[#344054]"
-                  >Export selected rows only ({{ documentStore.selectedCount }} selected)</span
+                >Export selected rows only ({{ documentStore.selectedCount }} selected)</span
                 >
               </label>
               <label class="flex items-center gap-2">
@@ -389,7 +391,11 @@ async function handleExport() {
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             {{ isExporting ? 'Exporting...' : 'Export' }}
           </button>

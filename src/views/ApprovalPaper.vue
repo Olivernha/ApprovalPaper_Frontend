@@ -6,22 +6,25 @@ import { onMounted } from 'vue'
 
 
 import { useUserStore } from '@/stores/userStore'
+import { useDocumentStore } from '@/stores/documentStore.ts'
 const userStore = useUserStore()
+const documentStore = useDocumentStore()
 const props = defineProps<{
   id: string
 }>()
 
 onMounted(async () => {
   console.log('Mounted For ApprovalPaper View')
+
   await userStore.fetchUserData()
 
 })
 </script>
 
 <template>
-  <main class="flex-1 p-8 bg-[#f5f5f5]">
+  <main class="flex-1 py-8 px-6 bg-[#f5f5f5]">
     <div class="flex flex-col lg:flex-row gap-6">
-      <TableData />
+      <TableData :dept_id="props.id"/>
       <div class="flex flex-col gap-6">
         <AddDocumentForm  :id="props.id"/>
         <DocumentSummaryCard v-if="userStore.userData?.isAdmin"  :id="props.id"/>

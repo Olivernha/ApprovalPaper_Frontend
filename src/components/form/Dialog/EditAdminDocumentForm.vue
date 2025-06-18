@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { X, Upload, CheckIcon } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/userStore'
+import { useToast } from '@/composables/useToast'
 
 interface EditAdminDocumentFormProps {
   document: {
@@ -22,12 +23,16 @@ const emit = defineEmits<{
   (event: 'save', document: EditAdminDocumentFormProps['document']): void
   (event: 'delete', document: EditAdminDocumentFormProps['document']): void
 }>()
+
+const { success, error, warning } = useToast()
+
 const formatForDateTimeLocal = (date: Date | string | undefined): string => {
   return date ? new Date(date).toISOString().slice(0, 10) : ''
 }
 
 const createdDateForInput = ref(formatForDateTimeLocal(props.document.created_date))
 const filedDateForInput = ref(formatForDateTimeLocal(props.document.filed_date))
+const isLoading = ref(false)
 
 const editForm = reactive({
   title: props.document.title,
@@ -46,49 +51,96 @@ const closeModal = () => {
   emit('close')
 }
 
-watch(
-  () => selectedAction.value,
-  (newAction) => {
-    if (newAction === 'Filed') {
-      filedDateForInput.value = formatForDateTimeLocal(new Date())
-      editForm.filed_by = useStore.userData?.full_name
-    }
-    if (newAction === 'Not Filed') {
-      filedDateForInput.value = ''
-      editForm.filed_by = ''
-    }
-    if (newAction === 'Suspended') {
-      editForm.filed_by = useStore.userData?.full_name
-    }
-  },
-)
+onMounted(() => {
+  watch(
+    () => selectedAction.value,
+    (newAction) => {
+      if (newAction === 'Filed') {
+        filedDateForInput.value = formatForDateTimeLocal(new Date())
+        editForm.filed_by = useStore.userData?.full_name
+      }
+      if (newAction === 'Not Filed') {
+        filedDateForInput.value = ''
+        editForm.filed_by = ''
+      }
+      if (newAction === 'Suspended') {
+        editForm.filed_by = useStore.userData?.full_name
+      }
+    },
+    { immediate: true }
+  )
 
-watch(
-  () => createdDateForInput.value,
-  (newDate, oldDate) => {
-    if (newDate === oldDate) return
-    editForm.created_date = newDate ?? new Date(newDate).toISOString()
-  },
-)
+  watch(
+    () => createdDateForInput.value,
+    (newDate, oldDate) => {
+      if (newDate === oldDate) return
+      editForm.created_date = newDate ?? new Date(newDate).toISOString()
+    },
+    { immediate: true }
+  )
 
-watch(
-  () => filedDateForInput.value,
-  (newDate, oldDate) => {
-    if (newDate === oldDate) return
-    editForm.filed_date = newDate ?? new Date(newDate).toISOString()
-  },
-)
+  watch(
+    () => filedDateForInput.value,
+    (newDate, oldDate) => {
+      if (newDate === oldDate) return
+      editForm.filed_date = newDate ?? new Date(newDate).toISOString()
+    },
+    { immediate: true }
+  )
+})
 
-const applyChanges = () => {
-  if (selectedAction.value === 'Delete') {
-    emit('delete', props.document)
+const applyChanges = async () => {
+  if (!editForm.title.trim()) {
+    error('Validation Error', 'Document title is required')
     return
   }
-  const updatedDocument: EditAdminDocumentFormProps['document'] = {
-    ...editForm,
-    status: selectedAction.value,
+
+  if (!editForm.created_by.trim()) {
+    error('Validation Error', 'Created by field is required')
+    return
   }
-  emit('save', updatedDocument)
+
+  isLoading.value = true
+
+  try {
+    if (selectedAction.value === 'Delete') {
+      emit('delete', props.document)
+      success('Document Deleted', 'The document has been successfully deleted')
+      return
+    }
+
+    const updatedDocument: EditAdminDocumentFormProps['document'] = {
+      ...editForm,
+      status: selectedAction.value,
+    }
+
+    emit('save', updatedDocument)
+
+    switch (selectedAction.value) {
+      case 'Filed':
+        success('Document Filed', 'The document has been successfully filed')
+        break
+      case 'Not Filed':
+        success('Document Unfiled', 'The document status has been updated to unfiled')
+        break
+      case 'Suspended':
+        warning('Document Suspended', 'The document has been suspended')
+        break
+      default:
+        success('Document Updated', 'The document has been successfully updated')
+    }
+
+    // Close modal after a short delay to show the toast
+    setTimeout(() => {
+      closeModal()
+    }, 500)
+
+  } catch (err) {
+    console.error('Error updating document:', err)
+    error('Update Failed', 'Failed to update the document. Please try again.')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const triggerFileInput = () => {
@@ -98,14 +150,30 @@ const triggerFileInput = () => {
 const handleFileSelect = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
+    // Validate file size (5GB = 5 * 1024 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024 * 1024
+    if (file.size > maxSize) {
+      error('File Too Large', 'File size must be less than 5GB')
+      return
+    }
+
     editForm.attachment = file
+    success('File Selected', `Selected: ${file.name}`)
   }
 }
 
 const handleFileDrop = (event: DragEvent) => {
   const file = event.dataTransfer?.files[0]
   if (file) {
+    // Validate file size
+    const maxSize = 5 * 1024 * 1024 * 1024
+    if (file.size > maxSize) {
+      error('File Too Large', 'File size must be less than 5GB')
+      return
+    }
+
     editForm.attachment = file
+    success('File Attached', `Attached: ${file.name}`)
   }
 }
 </script>
@@ -120,7 +188,7 @@ const handleFileDrop = (event: DragEvent) => {
       @click.stop
     >
       <div class="flex items-center justify-between p-6 border-b border-[#eaecf0]">
-        <h2 class="text-xl font-medium text-[#101828]">Edit Filed Document</h2>
+        <h2 class="text-xl font-medium text-[#101828]">Edit {{ props.document.status }} Document</h2>
         <button @click="closeModal" class="p-1 hover:bg-gray-100 rounded">
           <X class="h-4 w-4" />
         </button>
@@ -129,24 +197,30 @@ const handleFileDrop = (event: DragEvent) => {
       <div class="p-6 space-y-6">
         <!-- Title -->
         <div>
-          <label class="block text-sm font-medium text-[#344054] mb-1">Title</label>
+          <label class="block text-sm font-medium text-[#344054] mb-1">
+            Title <span class="text-red-500">*</span>
+          </label>
           <input
             v-model="editForm.title"
             type="text"
-            placeholder="title"
+            placeholder="Enter document title"
             class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#697b9d] focus:border-transparent"
+            :class="{ 'border-red-300': !editForm.title.trim() }"
           />
         </div>
 
         <!-- Created By and Filed By -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-[#344054] mb-1">Created By</label>
+            <label class="block text-sm font-medium text-[#344054] mb-1">
+              Created By <span class="text-red-500">*</span>
+            </label>
             <input
               v-model="editForm.created_by"
               type="text"
-              placeholder="title"
+              placeholder="Enter creator name"
               class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#697b9d] focus:border-transparent"
+              :class="{ 'border-red-300': !editForm.created_by.trim() }"
             />
           </div>
           <div>
@@ -154,7 +228,7 @@ const handleFileDrop = (event: DragEvent) => {
             <input
               v-model="editForm.filed_by"
               type="text"
-              placeholder="title"
+              placeholder="Enter filer name"
               class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#697b9d] focus:border-transparent"
             />
           </div>
@@ -207,11 +281,9 @@ const handleFileDrop = (event: DragEvent) => {
                 </svg>
               </div>
               <input
-                datepicker
                 v-model="createdDateForInput"
-                id="default-datepicker"
                 type="date"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
                 placeholder="Select date"
               />
             </div>
@@ -234,9 +306,8 @@ const handleFileDrop = (event: DragEvent) => {
               </div>
               <input
                 v-model="filedDateForInput"
-                id="default-datepicker"
                 type="date"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
                 placeholder="Select date"
               />
             </div>
@@ -249,8 +320,8 @@ const handleFileDrop = (event: DragEvent) => {
           <div class="flex gap-3 py-4">
             <button
               @click="selectedAction = 'Not Filed'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md"
-              :class="{ 'bg-gray-100': selectedAction === 'Not Filed' }"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Not Filed' }"
             >
               <span class="flex items-center justify-center gap-2">
                 <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Not Filed'" />
@@ -260,28 +331,30 @@ const handleFileDrop = (event: DragEvent) => {
 
             <button
               @click="selectedAction = 'Filed'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md"
-              :class="{ 'bg-gray-100': selectedAction === 'Filed' }"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Filed' }"
             >
               <span class="flex items-center justify-center gap-2">
                 <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Filed'" />
                 File
               </span>
             </button>
+
             <button
               @click="selectedAction = 'Suspended'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md"
-              :class="{ 'bg-gray-100': selectedAction === 'Suspended' }"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Suspended' }"
             >
               <span class="flex items-center justify-center gap-2">
                 <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Suspended'" />
                 Suspend
               </span>
             </button>
+
             <button
               @click="selectedAction = 'Delete'"
-              class="flex-1 border border-[#fc0000] text-[#e81a1a] p-3 rounded-md"
-              :class="{ 'bg-gray-100': selectedAction === 'Delete' }"
+              class="flex-1 border border-[#fc0000] text-[#e81a1a] p-3 rounded-md transition-colors hover:bg-red-50"
+              :class="{ 'bg-red-100 border-red-600': selectedAction === 'Delete' }"
             >
               <span class="flex items-center justify-center gap-2">
                 <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Delete'" />
@@ -296,20 +369,24 @@ const handleFileDrop = (event: DragEvent) => {
           <button
             @click="closeModal"
             class="px-6 py-2 border border-[#d0d5dd] text-[#344054] rounded-md hover:bg-[#f9fafb] transition-colors"
+            :disabled="isLoading"
           >
             Cancel
           </button>
           <button
             @click="applyChanges"
-            class="px-6 py-2 bg-[#697b9d] hover:bg-[#5a6a8a] text-white rounded-md transition-colors"
+            class="px-6 py-2 bg-[#697b9d] hover:bg-[#5a6a8a] text-white rounded-md transition-colors flex items-center gap-2"
+            :disabled="isLoading"
           >
-            Apply
+            <div v-if="isLoading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            {{ isLoading ? 'Updating...' : 'Apply' }}
           </button>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <style scoped>
 input[type='date']::-webkit-calendar-picker-indicator {
   background: transparent;

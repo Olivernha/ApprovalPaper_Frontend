@@ -2,7 +2,7 @@
   <thead>
     <tr class="border-b border-b-gray-300 text-left text-sm text-gray-500">
       <!-- Bulk Selection Checkbox -->
-      <th class="py-3 px-4 font-medium w-12">
+      <th class="py-3 px-4 font-medium">
         <div v-if="userStore.userData?.isAdmin" class="flex items-center">
           <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleSelectAll"
             :disabled="isLoading"
@@ -24,13 +24,13 @@
             :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
-      <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('filed_by')">
-          Filed By
-          <component :is="getSortIcon('file_by')" class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }" />
-        </div>
-      </th>
+<!--      <th class="py-3 px-4 font-medium">-->
+<!--        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('filed_by')">-->
+<!--          Filed By-->
+<!--          <component :is="getSortIcon('file_by')" class="h-4 w-4 transition-transform duration-200"-->
+<!--            :class="{ 'opacity-50': isLoading }" />-->
+<!--        </div>-->
+<!--      </th>-->
       <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('filed_date')">
           Filed Date
@@ -38,27 +38,21 @@
             :class="{ 'opacity-50': isLoading }" />
         </div>
       </th>
-      <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_by')">
-          Created By
-          <component :is="getSortIcon('created_by')" class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }" />
-        </div>
-      </th>
-      <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_date')">
-          Date
-          <component :is="getSortIcon('created_date')" class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }" />
-        </div>
-      </th>
-      <th class="py-3 px-4 font-medium">
-        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('status')">
-          Status
-          <component :is="getSortIcon('status')" class="h-4 w-4 transition-transform duration-200"
-            :class="{ 'opacity-50': isLoading }" />
-        </div>
-      </th>
+<!--      <th class="py-3 px-4 font-medium">-->
+<!--        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_by')">-->
+<!--          Created By-->
+<!--          <component :is="getSortIcon('created_by')" class="h-4 w-4 transition-transform duration-200"-->
+<!--            :class="{ 'opacity-50': isLoading }" />-->
+<!--        </div>-->
+<!--      </th>-->
+<!--      <th class="py-3 px-4 font-medium">-->
+<!--        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_date')">-->
+<!--          Date-->
+<!--          <component :is="getSortIcon('created_date')" class="h-4 w-4 transition-transform duration-200"-->
+<!--            :class="{ 'opacity-50': isLoading }" />-->
+<!--        </div>-->
+<!--      </th>-->
+
       <th class="py-3 px-4 font-medium"></th>
     </tr>
   </thead>

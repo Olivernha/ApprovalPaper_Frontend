@@ -1,5 +1,6 @@
+
 <template>
-  <div class="relative w-full h-full xl:h-96  xl:w-72 2xl:w-96 bg-white rounded-lg p-6">
+  <div class="relative w-full h-full xl:h-96 xl:w-72 2xl:w-96 bg-white rounded-lg p-6">
     <h2 class="text-2xl font-medium mb-2">Add a new document</h2>
     <p class="text-gray-600 text-sm mb-6">
       Fill in the fields below and press add to generate a reference number
@@ -87,6 +88,7 @@
         />
       </div>
 
+
       <button
         type="submit"
         :disabled="
@@ -107,45 +109,6 @@
         <span>{{ isSubmitting ? 'Adding Document...' : 'Add Document' }}</span>
       </button>
     </form>
-
-    <!-- Success message -->
-    <div
-      v-if="showSuccessMessage"
-      class="absolute top-5 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2 text-green-700 animate-fade-in"
-    >
-      <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-          clip-rule="evenodd"
-        ></path>
-      </svg>
-      <span class="text-sm">Document added successfully!</span>
-    </div>
-
-    <!-- Error message -->
-    <div
-      v-if="submitError"
-      class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-700 animate-fade-in"
-    >
-      <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path
-          fill-rule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-          clip-rule="evenodd"
-        ></path>
-      </svg>
-      <div class="flex-1">
-        <span class="text-sm">{{ submitError }}</span>
-        <button
-          @click="clearError"
-          class="ml-2 underline hover:no-underline text-red-800"
-          type="button"
-        >
-          Dismiss
-        </button>
-      </div>
-    </div>
 
     <!-- Loading overlay for entire form -->
     <div
@@ -168,75 +131,79 @@ import { ChevronDown as ChevronDownIcon } from 'lucide-vue-next'
 import { ref, onMounted, watch } from 'vue'
 import { useDocumentTypeStore } from '@/stores/documentTypeStore'
 import type { NewDocument } from '@/types/documentTypes'
+import { useToast } from '@/composables/useToast.ts'
 
+const { success, error } = useToast()
 const documentTypeStore = useDocumentTypeStore()
 const store = useDocumentStore()
 
 const props = defineProps<{
   id: string
 }>()
+
 // Loading states
 const isSubmitting = ref(false)
 const isInitialLoading = ref(true)
-const showSuccessMessage = ref(false)
-const submitError = ref('')
 
-store.departmentId = props.id
 const newDocument = ref<NewDocument>({
   department_id: props.id,
   document_type_id: '',
   title: '',
+  created_date: '', // Optional field
 })
 
 // Initialize component
 onMounted(async () => {
   try {
     await documentTypeStore.fetchDocumentTypes(props.id)
-  } catch (error) {
-    console.error('Error initializing form:', error)
+  } catch (err) {
+    error('Failed to load document types. Please try again.')
+    console.error('Error initializing form:', err)
   } finally {
     isInitialLoading.value = false
   }
 })
 
-
 const addDocument = async () => {
-  if (
-    !newDocument.value.document_type_id ||
-    !newDocument.value.title ||
-    !newDocument.value.department_id
-  ) {
-    submitError.value = 'Please fill in all required fields.'
+  // Validate required fields
+  if (!newDocument.value.document_type_id || !newDocument.value.title || !newDocument.value.department_id) {
+    error('Please fill in all required fields.')
     return
   }
 
+  // Validate created_date if provided
+  let formattedDate: string | undefined
+  if (newDocument.value.created_date) {
+    const date = new Date(newDocument.value.created_date)
+    if (isNaN(date.getTime())) {
+      error('Invalid date format for created date.')
+      return
+    }
+    formattedDate = date.toISOString().split('T')[0]
+  }
+
   isSubmitting.value = true
-  submitError.value = ''
 
   try {
-
-
     await store.addDocument({
       document_type_id: newDocument.value.document_type_id,
       title: newDocument.value.title,
       department_id: newDocument.value.department_id,
+      created_date: formattedDate,
     })
 
+    success('Document added successfully!')
 
+    // Reset form
     newDocument.value = {
       document_type_id: '',
       title: '',
       department_id: props.id,
+      created_date: '',
     }
-
-
-    showSuccessMessage.value = true
-    setTimeout(() => {
-      showSuccessMessage.value = false
-    }, 5000)
-  } catch (error) {
-    const err = error as { message?: string }
-    submitError.value = err.message || 'Failed to add document.'
+  } catch (err) {
+    const errorMsg = (err as { message?: string }).message || 'Failed to add document.'
+    error(errorMsg)
   } finally {
     isSubmitting.value = false
   }
@@ -245,13 +212,11 @@ const addDocument = async () => {
 const retryLoadDocumentTypes = async () => {
   try {
     await documentTypeStore.fetchDocumentTypes(props.id)
-  } catch (error) {
-    console.error('Error retrying document types:', error)
+    success('Document types loaded successfully!')
+  } catch (err) {
+    error('Failed to reload document types. Please try again.')
+    console.error('Error retrying document types:', err)
   }
-}
-
-const clearError = () => {
-  submitError.value = ''
 }
 
 watch(
@@ -260,25 +225,7 @@ watch(
     if (!newValue && isInitialLoading.value) {
       isInitialLoading.value = false
     }
-  },
-)
-
-watch(
-  () => newDocument.value.title,
-  (newTitle, oldTitle) => {
-    if (newTitle !== oldTitle && submitError.value) {
-      submitError.value = ''
-    }
-  },
-)
-
-watch(
-  () => newDocument.value.document_type_id,
-  () => {
-    if (submitError.value) {
-      submitError.value = ''
-    }
-  },
+  }
 )
 </script>
 

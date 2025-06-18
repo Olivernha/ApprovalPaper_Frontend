@@ -1,6 +1,6 @@
 <template>
-  <span :class="['inline-flex items-center px-3 py-1 rounded-full text-xs font-normal', statusColor, textColor]">
-    <span :class="['h-2 w-2 mr-2 rounded-full', dotColor]"></span>
+  <span :class="['text-xs font-medium px-2 py-0.5 rounded-full inline-block w-fit', statusColor, textColor]">
+
     {{ status }}
   </span>
 </template>

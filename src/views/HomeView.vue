@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { computed, ref, reactive, onMounted, watch, onUnmounted } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import { useDocumentStore } from '@/stores/documentStore'
 import { Search, Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useLoadingBar } from '@/composables/useLoadingBar'
+
 const departmentStore = useDepartmentStore()
 const documentStore = useDocumentStore()
 const departments = computed(() => departmentStore.departments)
@@ -11,6 +12,7 @@ const searchQuery = ref('')
 
 const isLoading = computed(() => departmentStore.isLoading)
 const { start: startLoading, finish: finishLoading } = useLoadingBar()
+
 // Store document counts for each department
 const departmentCounts = reactive<
   Record<
@@ -91,7 +93,11 @@ watch(
 
 onMounted(() => {
   loadDepartmentCounts()
+
 })
+
+
+
 </script>
 
 <template>
@@ -108,18 +114,6 @@ onMounted(() => {
           <h1 class="text-2xl font-semibold text-[#344054]">Departments</h1>
           <p class="text-[#667085]">Browse and access department documents</p>
         </div>
-      </div>
-
-      <div class="relative">
-        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#667085]">
-          <Search class="w-4 h-4" />
-        </div>
-        <input
-          type="text"
-          placeholder="Search departments"
-          v-model="searchQuery"
-          class="pl-10 pr-4 py-2 w-64 bg-white border border-[#d0d5dd] rounded-md focus:outline-none focus:ring-2 focus:ring-[#a41f36] focus:border-transparent"
-        />
       </div>
     </div>
 
@@ -153,73 +147,81 @@ onMounted(() => {
       >
         <!-- Department Header -->
         <div class="p-5 border-b border-[#eaecf0]">
-          <div class="flex items-center gap-3 mb-3">
-            <div
-              class="w-10 h-10 bg-[#f9fafb] rounded-full flex items-center justify-center text-[#697b9d]"
-            >
-              <Folder class="w-6 h-6" />
-            </div>
-            <h3 class="text-lg font-medium text-[#344054]">{{ department.name }}</h3>
-          </div>
-
-          <!-- File Status Summary -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center gap-2">
-                <FileText class="w-3 h-3 text-[#667085]" />
-                <span class="text-[#667085]">Total Documents</span>
+          <!-- Department Name with Total Count -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 bg-[#f9fafb] rounded-full flex items-center justify-center text-[#697b9d]"
+              >
+                <Folder class="w-6 h-6" />
               </div>
-              <span class="font-medium text-[#344054]">
+              <h3 class="text-lg font-medium text-[#344054]">{{ department.name }}</h3>
+            </div>
+
+            <!-- Total Document Count Badge -->
+            <div class="flex items-center gap-2 bg-[#f9fafb] px-3 py-1.5 rounded-full border border-[#eaecf0]">
+              <FileText class="w-4 h-4 text-[#667085]" />
+              <span class="text-sm font-semibold text-[#344054]">
                 {{ getDepartmentDocumentCounts(department._id).total }}
               </span>
+              <span class="text-xs text-[#667085]">docs</span>
             </div>
+          </div>
 
-            <!-- Status breakdown -->
-            <div class="grid grid-cols-3 gap-3 mt-4">
-              <!-- Enhanced Unfiled Section -->
-              <div class="text-center p-3 bg-gradient-to-br from-[#fef2f2] to-[#fee2e2] rounded-lg border-2 border-[#fca5a5] shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div class="flex items-center justify-center gap-1 mb-2">
-                  <AlertTriangle class="w-4 h-4 text-[#dc2626]" />
-                </div>
-                <div class="text-xs font-semibold text-[#991b1b] uppercase tracking-wide mb-1">
-                  Unfiled
-                </div>
-                <div class="text-lg font-bold text-[#dc2626] bg-white rounded-md py-1 px-2 shadow-sm">
-                  {{ getDepartmentDocumentCounts(department._id).unfiled }}
-                </div>
-                <!-- Attention indicator for unfiled documents -->
-                <div
-                  v-if="getDepartmentDocumentCounts(department._id).unfiled > 0"
-                  class="w-2 h-2 bg-[#dc2626] rounded-full mx-auto mt-2 animate-pulse"
-                ></div>
+          <!-- Status breakdown -->
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Enhanced Unfiled Section -->
+            <router-link
+              :to="{ name: 'Department', params: { id: department._id }, query: { status: 'Not Filed' } }"
+              class="text-center p-3 bg-gradient-to-br from-[#fef2f2] to-[#fee2e2] rounded-lg border-2 border-[#fca5a5] shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <div class="flex items-center justify-center gap-1 mb-2">
+                <AlertTriangle class="w-4 h-4 text-[#dc2626]" />
               </div>
+              <div class="text-xs font-semibold text-[#991b1b] uppercase tracking-wide mb-1">
+                Unfiled
+              </div>
+              <div class="text-lg font-bold text-[#dc2626] bg-white rounded-md py-1 px-2 shadow-sm">
+                {{ getDepartmentDocumentCounts(department._id).unfiled }}
+              </div>
+              <!-- Attention indicator for unfiled documents -->
+              <div
+                v-if="getDepartmentDocumentCounts(department._id).unfiled > 0"
+                class="w-2 h-2 bg-[#dc2626] rounded-full mx-auto mt-2 animate-pulse"
+              ></div>
+            </router-link>
 
-              <!-- Filed Section -->
-              <div class="text-center p-3 bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] rounded-lg border border-[#6ee7b7] hover:shadow-sm transition-shadow duration-200">
-                <div class="flex items-center justify-center gap-1 mb-2">
-                  <Star class="w-4 h-4 text-[#059669]" />
-                </div>
-                <div class="text-xs font-medium text-[#065f46] uppercase tracking-wide mb-1">
-                  Filed
-                </div>
-                <div class="text-lg font-bold text-[#059669]">
-                  {{ getDepartmentDocumentCounts(department._id).filed }}
-                </div>
+            <!-- Filed Section -->
+            <router-link
+              :to="{ name: 'Department', params: { id: department._id }, query: { status: 'Filed' } }"
+              class="text-center p-3 bg-gradient-to-br from-[#d1fae5] to-[#a7f3d0] rounded-lg border border-[#6ee7b7] hover:shadow-sm transition-shadow duration-200"
+            >
+              <div class="flex items-center justify-center gap-1 mb-2">
+                <Star class="w-4 h-4 text-[#059669]" />
               </div>
+              <div class="text-xs font-medium text-[#065f46] uppercase tracking-wide mb-1">
+                Filed
+              </div>
+              <div class="text-lg font-bold text-[#059669]">
+                {{ getDepartmentDocumentCounts(department._id).filed }}
+              </div>
+            </router-link>
 
-              <!-- Suspended Section -->
-              <div class="text-center p-3 bg-gradient-to-br from-[#e0e7ff] to-[#c7d2fe] rounded-lg border border-[#a5b4fc] hover:shadow-sm transition-shadow duration-200">
-                <div class="flex items-center justify-center gap-1 mb-2">
-                  <Star class="w-4 h-4 text-[#4f46e5]" />
-                </div>
-                <div class="text-xs font-medium text-[#3730a3] uppercase tracking-wide mb-1">
-                  Suspended
-                </div>
-                <div class="text-lg font-bold text-[#4f46e5]">
-                  {{ getDepartmentDocumentCounts(department._id).suspended }}
-                </div>
+            <!-- Suspended Section -->
+            <router-link
+              :to="{ name: 'Department', params: { id: department._id }, query: { status: 'Suspended' } }"
+              class="text-center p-3 bg-gradient-to-br from-[#e0e7ff] to-[#c7d2fe] rounded-lg border border-[#a5b4fc] hover:shadow-sm transition-shadow duration-200"
+            >
+              <div class="flex items-center justify-center gap-1 mb-2">
+                <Star class="w-4 h-4 text-[#4f46e5]" />
               </div>
-            </div>
+              <div class="text-xs font-medium text-[#3730a3] uppercase tracking-wide mb-1">
+                Suspended
+              </div>
+              <div class="text-lg font-bold text-[#4f46e5]">
+                {{ getDepartmentDocumentCounts(department._id).suspended }}
+              </div>
+            </router-link>
           </div>
         </div>
 
@@ -229,7 +231,7 @@ onMounted(() => {
             :to="{ name: 'Department', params: { id: department._id } }"
             class="block w-full bg-[#697b9d] hover:bg-[#5a6b8a] text-white text-center py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#697b9d] focus:ring-offset-2"
           >
-            View Documents
+            View All Documents
           </router-link>
         </div>
       </div>

@@ -6,6 +6,7 @@ import AppHeader from './components/layout/AppHeader.vue'
 import LoadingBar from './components/LoadingBar.vue'
 import { useRoute } from 'vue-router'
 import NavigationBreadcrumb from './components/NavigationBreadcrumb.vue'
+import ToastContainer from '@/components/ui/toastContainer.vue'
 
 const departmentStore = useDepartmentStore()
 const isLoading = ref(true)
@@ -71,6 +72,8 @@ const breadcrumbItems = computed(() => {
     />
 
     <router-view />
+    <!-- Toast Container -->
+    <ToastContainer />
     <AppFooter />
   </div>
 </template>

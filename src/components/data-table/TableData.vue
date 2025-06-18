@@ -15,7 +15,7 @@
 
       <!--Table-->
       <div class="overflow-x-auto">
-        <table class="min-w-full border-collapse">
+        <table class="min-w-full border-collapse table-auto">
           <TableHead />
 
           <tbody>
@@ -47,7 +47,7 @@
             </template>
 
             <!-- Actual Data -->
-            <TableRow v-else />
+            <TableRow v-else  />
 
             <!-- Empty State -->
             <tr v-if="!documentStore.isLoading && documentStore.documents.length === 0">
@@ -79,27 +79,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import TableHeader from './TableHeader.vue';
 import TableHead from './TableHead.vue';
 import TableRow from './TableRow.vue';
 import TablePagination from './TablePagination.vue';
 import { useDocumentStore } from '@/stores/documentStore';
 import BulkActionsBar from '../data-table/BulkActionsBar.vue';
+
+const props = defineProps<{
+  dept_id: string
+}>()
 const documentStore = useDocumentStore()
+const route = useRoute()
 const isInitialLoading = ref(true)
 
 const refreshDocuments = async () => {
+  isInitialLoading.value = true
   await documentStore.fetchDocuments()
+  isInitialLoading.value = false
 }
-
 onMounted(async () => {
   try {
+    documentStore.departmentId = props.dept_id
+    // Set initial status filter from route.query.status
+    if (route.query.status) {
+      documentStore.setStatusFilter(route.query.status as string)
+    } else {
+      documentStore.setStatusFilter('')
+    }
     await documentStore.fetchDocuments()
   } finally {
     isInitialLoading.value = false
   }
 })
+
+watch(() => route.query.status, async (newStatus) => {
+  if (newStatus) {
+    console.log('Setting status filter to:', newStatus)
+    documentStore.setStatusFilter(newStatus as string)
+  } else {
+    documentStore.setStatusFilter('')
+  }
+  await documentStore.fetchDocuments()
+}) //
+
+
 </script>
 
 <style scoped>

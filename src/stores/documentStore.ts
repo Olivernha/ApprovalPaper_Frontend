@@ -29,6 +29,9 @@ export const useDocumentStore = defineStore('documentStore', {
   }),
 
   getters: {
+    getDocuments: (state) => {
+      return state.documents
+    },
     paginationText: (state) => {
       const totalPages = Math.ceil(state.totalDocuments / state.rowsPerPage)
       return `Page ${state.currentPage} of ${totalPages} — Total ${state.totalDocuments} records`
@@ -68,6 +71,11 @@ export const useDocumentStore = defineStore('documentStore', {
   },
 
   actions: {
+
+
+    setStatusFilter(status: string) {
+      this.statusFilter = status
+    },
     // Method to mark document as recently added
     markDocumentAsNew(documentId: string) {
       // Mark as recently added
@@ -130,7 +138,6 @@ export const useDocumentStore = defineStore('documentStore', {
           sort_field: apiSortField,
           sort_order: sortOrder.toString(),
         })
-
         const response = await api.get(
           import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/paginated`,
           {
@@ -177,7 +184,6 @@ export const useDocumentStore = defineStore('documentStore', {
         this.isLoading = false
       }
     },
-
     sortBy(field: string) {
       if (this.sortField === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
@@ -230,6 +236,7 @@ export const useDocumentStore = defineStore('documentStore', {
     },
 
     async updateDocument(updateData: UpdateDocument) {
+      console.log('Updating document with data:', updateData)
       this.isLoading = true
       try {
         const formData = new FormData()
@@ -260,7 +267,6 @@ export const useDocumentStore = defineStore('documentStore', {
         this.isLoading = false
       }
     },
-
     async downloadAttachment(documentId: string) {
       try {
         const response = await api.get(
