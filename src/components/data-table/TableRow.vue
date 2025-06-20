@@ -94,6 +94,7 @@
           v-if="isEditing(doc.id, 'title') "
           v-model.trim="editingValues[doc.id].title"
           @keyup.enter="saveEdit(doc.id)"
+          @blur="cancelEdit(doc.id)"
           @keyup.escape="cancelEdit(doc.id)"
           :class="[
             'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm',
@@ -281,21 +282,22 @@
 <!--      </div>-->
 <!--    </td>-->
 <!--     Enhanced Editable filed_date -->
-        <td class="py-3 px-0" @click.stop>
+    <td class="py-3 px-0" @click.stop>
           <div
             :class="[
               'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-               userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
+               userStore.userData?.isAdmin && doc.status !== 'Not Filed' ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
               isEditing(doc.id, 'filed_date') ? 'bg-transparent p-0' : ''
             ]"
             @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'filed_date')"
           >
             <input
-              v-if="isEditing(doc.id, 'filed_date')"
+              v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
               v-model="editingValues[doc.id].filed_date"
-
+              @blur="cancelEdit(doc.id)"
               @keyup.enter="saveEdit(doc.id)"
               @keyup.escape="cancelEdit(doc.id)"
+
               :class="[
                 'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm pr-10',
                 'bg-white text-gray-900 shadow-lg transition-all duration-200',
@@ -311,12 +313,12 @@
             />
             <div v-else class="flex items-center justify-between w-full">
               <span class="block">{{ formatForDateTimeLocal(doc.filed_date) }}</span>
-              <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+              <span  v-if="userStore.userData?.isAdmin && doc.status !== 'Not Filed'" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
             </div>
 
             <!-- Tooltip -->
             <div
-              v-if="isEditing(doc.id, 'filed_date')"
+              v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
               class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full
                      bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap
                      opacity-0 group-focus-within:opacity-100 transition-opacity duration-200
@@ -342,8 +344,8 @@
       <div
         v-if="activeDropdown === index"
         :class="[
-          'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-10 min-w-[160px] right-0',
-          shouldDropdownOpenUpward(index) ? 'bottom-full mb-1' : 'top-full mt-1',
+          'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-100 min-w-[160px] right-0',
+          shouldDropdownOpenUpward(index) ? 'bottom-2 mb-1' : 'top-2 mt-1',
         ]"
       >
         <button
@@ -467,6 +469,7 @@ const startEditing = (id: string, field: string) => {
     editingValues.value[id] = {}
   }
   const document = documents.value.find((d) => d.id === id)
+  console.log(document.filed_date)
   if (document) {
     editingValues.value[id] = {
       ref_no: document.ref_no,

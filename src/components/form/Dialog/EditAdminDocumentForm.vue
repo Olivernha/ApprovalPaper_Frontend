@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { X, Upload, CheckIcon } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/userStore'
 import { useToast } from '@/composables/useToast'
@@ -9,8 +9,8 @@ interface EditAdminDocumentFormProps {
     title: string
     created_by: string
     filed_by: string
-    created_date: string
-    filed_date: string
+    created_date: string | Date
+    filed_date: string | Date
     attachment?: File | null
     status?: string
     id?: string
@@ -27,8 +27,18 @@ const emit = defineEmits<{
 const { success, error, warning } = useToast()
 
 const formatForDateTimeLocal = (date: Date | string | undefined): string => {
-  return date ? new Date(date).toISOString().slice(0, 10) : ''
+  if (!date) return ''
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toISOString().split('T')[0] // returns "YYYY-MM-DD"
 }
+
+const formatToDate = (dateString: string): Date | null => {
+  if (!dateString) return null
+  return new Date(dateString + 'T00:00:00.000Z')
+}
+
+// Store the original created_date to use if not modified
+const originalCreatedDate = ref(props.document.created_date)
 
 const createdDateForInput = ref(formatForDateTimeLocal(props.document.created_date))
 const filedDateForInput = ref(formatForDateTimeLocal(props.document.filed_date))
@@ -38,7 +48,7 @@ const editForm = reactive({
   title: props.document.title,
   created_by: props.document.created_by,
   filed_by: props.document?.filed_by || '',
-  created_date: props.document.created_date,
+  created_date: props.document.created_date, // Initialize with original value
   filed_date: props.document.filed_date,
   attachment: props.document.attachment,
 })
@@ -51,43 +61,47 @@ const closeModal = () => {
   emit('close')
 }
 
-onMounted(() => {
-  watch(
-    () => selectedAction.value,
-    (newAction) => {
-      if (newAction === 'Filed') {
-        filedDateForInput.value = formatForDateTimeLocal(new Date())
-        editForm.filed_by = useStore.userData?.full_name
-      }
-      if (newAction === 'Not Filed') {
-        filedDateForInput.value = ''
-        editForm.filed_by = ''
-      }
-      if (newAction === 'Suspended') {
-        editForm.filed_by = useStore.userData?.full_name
-      }
-    },
-    { immediate: true }
-  )
+watch(
+  () => selectedAction.value,
+  (newAction) => {
+    if (newAction === 'Filed') {
+      const now = new Date()
+      filedDateForInput.value = formatForDateTimeLocal(now)
+      editForm.filed_date = now
+      editForm.filed_by = useStore.userData?.full_name
+    }
+    if (newAction === 'Not Filed') {
+      filedDateForInput.value = ''
+      editForm.filed_date = null
+      editForm.filed_by = ''
+    }
+    if (newAction === 'Suspended') {
+      editForm.filed_by = useStore.userData?.full_name
+    }
+  },
+  { immediate: true }
+)
 
-  watch(
-    () => createdDateForInput.value,
-    (newDate, oldDate) => {
-      if (newDate === oldDate) return
-      editForm.created_date = newDate ?? new Date(newDate).toISOString()
-    },
-    { immediate: true }
-  )
+watch(
+  () => createdDateForInput.value,
+  (newDate) => {
+    // Only update created_date if the input is explicitly changed to a valid date
+    if (newDate && newDate !== formatForDateTimeLocal(originalCreatedDate.value)) {
+      editForm.created_date = formatToDate(newDate)
+    } else {
+      editForm.created_date = originalCreatedDate.value
+    }
+  }
+)
 
-  watch(
-    () => filedDateForInput.value,
-    (newDate, oldDate) => {
-      if (newDate === oldDate) return
-      editForm.filed_date = newDate ?? new Date(newDate).toISOString()
-    },
-    { immediate: true }
-  )
-})
+watch(
+  () => filedDateForInput.value,
+  (newDate, oldDate) => {
+    if (newDate === oldDate) return
+    editForm.filed_date = newDate ? formatToDate(newDate) : null
+  },
+  { immediate: true }
+)
 
 const applyChanges = async () => {
   if (!editForm.title.trim()) {
@@ -111,6 +125,14 @@ const applyChanges = async () => {
 
     const updatedDocument: EditAdminDocumentFormProps['document'] = {
       ...editForm,
+      // Use original created_date if editForm.created_date matches original
+      created_date:
+        editForm.created_date === originalCreatedDate.value
+          ? originalCreatedDate.value
+          : editForm.created_date
+            ? new Date(editForm.created_date).toISOString()
+            : '',
+      filed_date: editForm.filed_date ? new Date(editForm.filed_date).toISOString() : '',
       status: selectedAction.value,
     }
 
@@ -130,11 +152,9 @@ const applyChanges = async () => {
         success('Document Updated', 'The document has been successfully updated')
     }
 
-    // Close modal after a short delay to show the toast
     setTimeout(() => {
       closeModal()
     }, 500)
-
   } catch (err) {
     console.error('Error updating document:', err)
     error('Update Failed', 'Failed to update the document. Please try again.')
@@ -150,7 +170,6 @@ const triggerFileInput = () => {
 const handleFileSelect = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
-    // Validate file size (5GB = 5 * 1024 * 1024 * 1024 bytes)
     const maxSize = 5 * 1024 * 1024 * 1024
     if (file.size > maxSize) {
       error('File Too Large', 'File size must be less than 5GB')
@@ -165,7 +184,6 @@ const handleFileSelect = (event: Event) => {
 const handleFileDrop = (event: DragEvent) => {
   const file = event.dataTransfer?.files[0]
   if (file) {
-    // Validate file size
     const maxSize = 5 * 1024 * 1024 * 1024
     if (file.size > maxSize) {
       error('File Too Large', 'File size must be less than 5GB')

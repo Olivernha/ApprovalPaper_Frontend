@@ -47,28 +47,33 @@ const getDepartmentDocumentCounts = (departmentId: string) => {
 
 // Function to fetch document counts for all departments
 const fetchAllDepartmentCounts = async () => {
-  for (const department of departments.value) {
-    try {
-      await documentStore.fetchDocCount(department._id)
-      const counts = documentStore.countStatus
+  const tempCounts = {};
 
-      departmentCounts[department._id] = {
-        unfiled: counts['Not Filed'] || 0,
-        filed: counts['Filed'] || 0,
-        suspended: counts['Suspended'] || 0,
-        total: (counts['Not Filed'] || 0) + (counts['Filed'] || 0) + (counts['Suspended'] || 0),
+  try {
+    const fetchPromises = departments.value.map(async (department) => {
+      try {
+        await documentStore.fetchDocCount(department._id);
+        const counts = documentStore.countStatus;
+        tempCounts[department._id] = {
+          unfiled: counts['Not Filed'] || 0,
+          filed: counts['Filed'] || 0,
+          suspended: counts['Suspended'] || 0,
+          total: (counts['Not Filed'] || 0) + (counts['Filed'] || 0) + (counts['Suspended'] || 0),
+        };
+      } catch (error) {
+        console.error(`Error fetching counts for department ${department._id}:`, error);
+        tempCounts[department._id] = { unfiled: 0, filed: 0, suspended: 0, total: 0 };
       }
-    } catch (error) {
-      console.error(`Error fetching counts for department ${department._id}:`, error)
-      departmentCounts[department._id] = {
-        unfiled: 0,
-        filed: 0,
-        suspended: 0,
-        total: 0,
-      }
-    }
+    });
+
+    await Promise.all(fetchPromises);
+
+    // Update reactive object once
+    Object.assign(departmentCounts, tempCounts);
+  } catch (error) {
+    console.error('Error fetching all department counts:', error);
   }
-}
+};
 
 // Fetch counts when departments change
 const loadDepartmentCounts = async () => {

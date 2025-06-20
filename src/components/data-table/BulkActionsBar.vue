@@ -27,16 +27,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, toRefs } from 'vue'
 import { Settings as SettingsIcon } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
 import BulkActionForm from '../form/Dialog/BulkActionForm.vue'
+
+import { useToast } from '@/composables/useToast.ts'
 const documentStore = useDocumentStore()
 const showChooseFromModal = ref(false);
 
 const selectedCount = computed(() => documentStore.selectedCount)
 const isLoading = computed(() => documentStore.isLoading)
-
+const { success, error } = useToast()
 
 
 const clearSelection = () => {
@@ -55,5 +57,7 @@ const applyAction = (action: string) => {
   documentStore.applyBulkAction(action)
   showChooseFromModal.value = false
   documentStore.clearSelection()
+  success(`Bulk action "${action}" applied successfully!`)
+
 }
 </script>

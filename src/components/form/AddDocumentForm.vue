@@ -171,25 +171,12 @@ const addDocument = async () => {
     return
   }
 
-  // Validate created_date if provided
-  let formattedDate: string | undefined
-  if (newDocument.value.created_date) {
-    const date = new Date(newDocument.value.created_date)
-    if (isNaN(date.getTime())) {
-      error('Invalid date format for created date.')
-      return
-    }
-    formattedDate = date.toISOString().split('T')[0]
-  }
-
   isSubmitting.value = true
-
   try {
     await store.addDocument({
       document_type_id: newDocument.value.document_type_id,
       title: newDocument.value.title,
       department_id: newDocument.value.department_id,
-      created_date: formattedDate,
     })
 
     success('Document added successfully!')

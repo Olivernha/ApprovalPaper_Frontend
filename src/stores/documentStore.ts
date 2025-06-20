@@ -72,7 +72,26 @@ export const useDocumentStore = defineStore('documentStore', {
 
   actions: {
 
-
+    resetState(){
+      this.exportDocuments = []
+      this.documents = []
+      this.searchQuery = ''
+      this.selectedDocumentType = ''
+      this.statusFilter = ''
+      this.departmentId = ''
+      this.rowsPerPage = 10
+      this.currentPage = 1
+      this.sortField = 'created_date'
+      this.sortDirection = 'desc'
+      this.totalDocuments = 0
+      this.totalPages = 1
+      this.hasNext = false
+      this.hasPrev = false
+      this.isLoading = false
+      this.selectedItems = []
+      this.countStatus = {}
+      this.recentlyAddedDocuments.clear()
+    },
     setStatusFilter(status: string) {
       this.statusFilter = status
     },
@@ -116,6 +135,7 @@ export const useDocumentStore = defineStore('documentStore', {
     },
 
     async fetchDocuments() {
+      console.log('Fetching documents with params:')
       this.isLoading = true
       try {
         const fieldMap: { [key: string]: string } = {
@@ -212,7 +232,8 @@ export const useDocumentStore = defineStore('documentStore', {
           document_type_id: newDoc.document_type_id,
           title: newDoc.title,
           ...(newDoc.department_id && { department_id: newDoc.department_id }),
-          created_by: useUserStore().userData?.full_name
+          created_by: useUserStore().userData?.full_name,
+          created_date: new Date().toISOString()
         })
 
         if (response.status !== 201) {
@@ -236,6 +257,7 @@ export const useDocumentStore = defineStore('documentStore', {
     },
 
     async updateDocument(updateData: UpdateDocument) {
+
       console.log('Updating document with data:', updateData)
       this.isLoading = true
       try {
@@ -243,7 +265,8 @@ export const useDocumentStore = defineStore('documentStore', {
         for (const [key, value] of Object.entries(updateData)) {
           if (value && key === 'status') {
             formData.append('doc_status', value)
-          } else if (value instanceof File) {
+          }
+          else if (value instanceof File) {
             formData.append('file', value)
           } else if (value && key !== 'file') {
             formData.append(key, String(value))

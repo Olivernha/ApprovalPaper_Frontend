@@ -116,7 +116,8 @@ async function handleExport() {
     console.log('dataToExport:', dataToExport)
 
     // Limit PDF export to 500 records
-    if (exportFormat.value === 'pdf' && dataToExport.length > 500) {
+    if (exportFormat.value === 'pdf' && dataToExport.length > 1000) {
+      console.log('dataToExport Failed:', dataToExport.length)
       exportProgress.value = 'Too many documents for PDF export (max 500). Use CSV for larger datasets.'
       setTimeout(() => {
         isExporting.value = false
@@ -186,7 +187,7 @@ async function handleExport() {
           },
           columnStyles: {
             title: {
-              cellWidth: 60, // Fixed width for title column (in mm)
+              cellWidth: 50, // Fixed width for title column (in mm)
               overflow: 'linebreak', // Wrap long titles
             },
             refNo: { cellWidth: 20 },

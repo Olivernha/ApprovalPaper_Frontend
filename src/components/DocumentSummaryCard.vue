@@ -62,12 +62,13 @@ const fetchDocumentData = async () => {
   await store.fetchDocCount(props.id)
 }
 
-onMounted(fetchDocumentData)
 
-watch(() => props.id, async (newId, oldId) => {
-  if (newId !== oldId) {
-    await fetchDocumentData()
-  }
+
+watch(()=> store.documents, () => {
+  fetchDocumentData()
+}, {
+  immediate: true,
+  deep: true
 })
 
 const unfiledCount = computed(() => {

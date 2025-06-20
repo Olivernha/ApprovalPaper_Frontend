@@ -92,7 +92,7 @@ import {
 } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useDocumentTypeStore } from '@/stores/documentTypeStore'
-import { watch, ref } from 'vue'
+import { watch, ref, onUnmounted } from 'vue'
 import ExportForm from '../form/Dialog/ExportForm.vue'
 
 const documentStore = useDocumentStore()
@@ -121,7 +121,7 @@ watch(
 
     if (oldSearchQuery !== newSearchQuery || oldDocumentType !== newDocumentType) {
       if (newSearchQuery !== oldSearchQuery) {
-        fetchDocumentsDebounced()
+        await fetchDocumentsDebounced()
       } else {
         await documentStore.fetchDocuments()
       }

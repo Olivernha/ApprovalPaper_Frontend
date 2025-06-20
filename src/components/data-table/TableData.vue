@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import TableHeader from './TableHeader.vue';
 import TableHead from './TableHead.vue';
@@ -100,6 +100,8 @@ const refreshDocuments = async () => {
   await documentStore.fetchDocuments()
   isInitialLoading.value = false
 }
+
+
 onMounted(async () => {
   try {
     documentStore.departmentId = props.dept_id
@@ -109,6 +111,7 @@ onMounted(async () => {
     } else {
       documentStore.setStatusFilter('')
     }
+    console.log('Mounted TableData with department ID:', props.dept_id)
     await documentStore.fetchDocuments()
   } finally {
     isInitialLoading.value = false
@@ -123,9 +126,12 @@ watch(() => route.query.status, async (newStatus) => {
     documentStore.setStatusFilter('')
   }
   await documentStore.fetchDocuments()
-}) //
+}, )
 
-
+onUnmounted(async()=>{
+  console.log('Unmounting TableData component')
+  await documentStore.resetState() // Reset store state when component is unmounted
+})
 </script>
 
 <style scoped>
