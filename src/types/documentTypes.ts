@@ -8,7 +8,7 @@ export interface Document {
   id?: string
   document_type_id?: string
   department_id?: string
-  file_id?: string
+  file_path?: string
   file?: File
   attachment?: File
   filed_by?: string
@@ -46,7 +46,7 @@ export type ApiDocument = {
   _id?: string
   document_type_id?: string
   department_id?: string
-  file_id?: string
+  file_path?: string
   filed_by?: string
   filed_date?: string
 }
@@ -68,6 +68,7 @@ export interface NewDocument {
   department_id: string
   document_type_id: string
   title: string
+  created_date?: string
 }
 
 export interface UpdateDocument {
@@ -82,5 +83,5 @@ export interface UpdateDocument {
   status?: string
   filed_by?: string
   filed_date?: string
-  filed_id?: string
+  filed_path?: string
 }

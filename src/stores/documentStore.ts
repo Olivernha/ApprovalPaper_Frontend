@@ -182,7 +182,7 @@ export const useDocumentStore = defineStore('documentStore', {
           document_type_id: doc.document_type_id,
           department_id: doc.department_id,
           id: doc._id,
-          file_id: doc.file_id || '',
+          file_path: doc.file_path || '',
           filed_by: doc.filed_by || '',
           filed_date: doc.filed_date || '',
         }))
@@ -293,7 +293,7 @@ export const useDocumentStore = defineStore('documentStore', {
     async downloadAttachment(documentId: string) {
       try {
         const response = await api.get(
-          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/download/${documentId}`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/${documentId}/file`,
           {
             responseType: 'blob',
           },

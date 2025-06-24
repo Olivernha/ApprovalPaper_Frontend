@@ -6,9 +6,9 @@ import { onMounted } from 'vue'
 
 
 import { useUserStore } from '@/stores/userStore'
-import { useDocumentStore } from '@/stores/documentStore.ts'
+
 const userStore = useUserStore()
-const documentStore = useDocumentStore()
+
 const props = defineProps<{
   id: string
 }>()

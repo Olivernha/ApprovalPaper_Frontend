@@ -58,7 +58,7 @@
       </div>
     </td>
 
-    <td class="group py-3 px-4">
+    <td class="group py-3 px-4 ">
       <div class="flex items-center gap-3">
         <!-- Status indicator with better positioning -->
         <div
@@ -81,7 +81,7 @@
     </td>
 
     <!-- Enhanced Editable title -->
-    <td class="py-3 px-0" @click.stop>
+    <td class="py-3 px-4" @click.stop>
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
@@ -282,7 +282,7 @@
 <!--      </div>-->
 <!--    </td>-->
 <!--     Enhanced Editable filed_date -->
-    <td class="py-3 px-0" @click.stop>
+    <td class="py-3 px-4" @click.stop>
           <div
             :class="[
               'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
@@ -332,7 +332,7 @@
           </div>
         </td>
 
-    <td class="py-3 px-4 text-right relative" @click.stop>
+    <td class="py-3 px-4 text-right " @click.stop>
       <button
         v-if="username === doc.created_by || userStore.userData?.isAdmin"
         :disabled="documentStore.isLoading"
@@ -345,7 +345,7 @@
         v-if="activeDropdown === index"
         :class="[
           'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-100 min-w-[160px] right-0',
-          shouldDropdownOpenUpward(index) ? 'bottom-2 mb-1' : 'top-2 mt-1',
+          shouldDropdownOpenUpward(index) ? 'bottom-2 mb-1' : 'top-[-5] mt-1',
         ]"
       >
         <button
@@ -357,12 +357,16 @@
         </button>
         <button
           @click="downloadDocument(doc)"
-          v-if="doc.file_id"
+          v-if="doc.file_path"
           class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer"
         >
           <EyeIcon class="w-4 h-4" />
           Download attachment
         </button>
+        <button
+          @click="openDetailsModal(doc)"
+          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer">
+          <InfoIcon class="w-4 h-4" />View  Details</button>
         <button
           @click="openDeleteModal(doc)"
           v-if="userStore.userData?.isAdmin || username === doc.created_by"
@@ -429,6 +433,7 @@ const formatForDateTimeLocal = (date: Date | string | undefined): string => {
 
 // Details Modal Functions
 const openDetailsModal = (doc: ApiDocument) => {
+  activeDropdown.value = null
   selectedDocument.value = doc
   isDetailsModalOpen.value = true
 }
@@ -573,8 +578,10 @@ const deleteDocument = async (doc: any) => {
 }
 
 const downloadDocument = async (doc: any) => {
-  if (doc.file_id) {
+  if (doc.file_path) {
+    success('Download started', 'Your document is being downloaded.')
     await documentStore.downloadAttachment(doc.id)
+    success('Download complete', 'Your document has been downloaded successfully.')
   } else {
     alert('No attachment available for this document.')
   }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted, watch, onUnmounted } from 'vue'
+import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import { useDocumentStore } from '@/stores/documentStore'
-import { Search, Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
+import {  Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useLoadingBar } from '@/composables/useLoadingBar'
 
 const departmentStore = useDepartmentStore()
@@ -47,7 +47,7 @@ const getDepartmentDocumentCounts = (departmentId: string) => {
 
 // Function to fetch document counts for all departments
 const fetchAllDepartmentCounts = async () => {
-  const tempCounts = {};
+  const tempCounts: Record<string, { unfiled: number; filed: number; suspended: number; total: number }> = {};
 
   try {
     const fetchPromises = departments.value.map(async (department) => {

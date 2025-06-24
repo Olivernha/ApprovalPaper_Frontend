@@ -6,6 +6,7 @@ import { useDepartmentStore } from '@/stores/departmentStore'
 import type { ApiDocument } from '@/types/documentTypes'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { useToast } from '@/composables/useToast'
 
 defineProps<{
   showExportModal: boolean
@@ -16,10 +17,12 @@ const documentStore = useDocumentStore()
 const route = useRoute()
 const departmentStore = useDepartmentStore()
 
+const { success, error } = useToast()
+
 const exportOptions = reactive({
   includeHeaders: true,
   selectedOnly: false,
-  includeTimestamp: true,
+  includeTimestamp: true
 })
 const exportFormat = ref('')
 const isExporting = ref(false)
@@ -37,7 +40,7 @@ const computeBtnDisabled = computed(() => {
   return !exportFormat.value || (exportOptions.selectedOnly && documentStore.selectedCount === 0) || isExporting.value
 })
 
-function convertToCSV(data: any[], includeHeaders = true) {
+function convertToCSV(data: ApiDocument[], includeHeaders = true) {
   const headers = [
     'RefNo',
 
@@ -57,12 +60,12 @@ function convertToCSV(data: any[], includeHeaders = true) {
       return `"${sanitized.slice(0, 1000)}"` // Limit to 1000 chars to prevent issues
     }
     const values = [
-      escapeCSV(row.ref_no || row.refNo || ''),
+      escapeCSV(row.ref_no || ''),
       escapeCSV(row.title || ''),
-      escapeCSV(row.filed_by || row.filedBy || ''),
-      escapeCSV(row.filed_date || row.filedDate || ''),
-      escapeCSV(row.created_by || row.createdBy || ''),
-      escapeCSV(row.created_date || row.date || ''),
+      escapeCSV(row.filed_by || ''),
+      escapeCSV(row.filed_date || ''),
+      escapeCSV(row.created_by || ''),
+      escapeCSV(row.created_date || ''),
       escapeCSV(row.status || ''),
     ]
     csv += values.join(',') + '\n'
@@ -119,6 +122,7 @@ async function handleExport() {
     if (exportFormat.value === 'pdf' && dataToExport.length > 1000) {
       console.log('dataToExport Failed:', dataToExport.length)
       exportProgress.value = 'Too many documents for PDF export (max 500). Use CSV for larger datasets.'
+      error('Too many documents for PDF export (max 1000). Use CSV for larger datasets.')
       setTimeout(() => {
         isExporting.value = false
         exportProgress.value = ''
@@ -145,7 +149,7 @@ async function handleExport() {
         pdf.setFontSize(16)
         pdf.text(`${departmentName.value || 'Documents'} Export`, 10, 10)
         pdf.setFontSize(12)
-        pdf.text(`Export Date: ${new Date().toLocaleDateString()}`, 10, 20)
+        pdf.text(`Export Date: ${new Date().toLocaleDateString('en-GB')}`, 10, 20)
         pdf.text(`Total Documents: ${dataToExport.length}`, 10, 30)
 
         const columns = [
@@ -158,75 +162,39 @@ async function handleExport() {
           { header: 'Status', dataKey: 'status' },
         ]
 
-        const tableData = dataToExport.map(doc => ({
-          refNo: (doc.ref_no || doc.refNo || '').slice(0, 50), // Limit lengths
-          title: (doc.title || '').slice(0, 200), // Limit title to 200 chars
-          filedBy: (doc.filed_by || doc.filedBy || '').slice(0, 50),
-          filedDate: (doc.filed_date || doc.filedDate || '').slice(0, 50),
-          createdBy: (doc.created_by || doc.createdBy || '').slice(0, 50),
-          date: (doc.created_date || doc.date || '').slice(0, 10),
-          status: (doc.status || '').slice(0, 50),
-        }))
+      const tableData = dataToExport.map(doc => ({
+        refNo: (doc.ref_no || '').slice(0, 50), // Limit lengths
+        title: (doc.title || '').slice(0, 200), // Limit title to 200 chars
+        filedBy: (doc.filed_by || '').slice(0, 50),
+        filedDate: (doc.filed_date || '').slice(0, 50),
+        createdBy: (doc.created_by || '').slice(0, 50),
+        date: (doc.created_date || '').slice(0, 10),
+        status: (doc.status || '').slice(0, 50),
+      }))
 
-        autoTable(pdf, {
-          columns,
-          body: tableData,
-          startY: 40,
-          styles: {
-            fontSize: 10,
-            cellPadding: 2,
-            textColor: [51, 51, 51],
-            overflow: 'linebreak', // Enable word wrapping
-          },
-          headStyles: {
-            fillColor: [240, 240, 240],
-            textColor: [51, 51, 51],
-          },
-          alternateRowStyles: {
-            fillColor: [249, 250, 251],
-          },
-          columnStyles: {
-            title: {
-              cellWidth: 50, // Fixed width for title column (in mm)
-              overflow: 'linebreak', // Wrap long titles
-            },
-            refNo: { cellWidth: 20 },
-            filedBy: { cellWidth: 25 },
-            filedDate: { cellWidth: 25 },
-            createdBy: { cellWidth: 25 },
-            date: { cellWidth: 25 },
-            status: { cellWidth: 20 },
-            textColor: (row: number) => {
-              const status = tableData[row]?.status?.toLowerCase()
-              if (status === 'not filed') return [164, 31, 54]
-              if (status === 'filed') return [20, 186, 109]
-              if (status === 'suspended') return [102, 112, 133]
-              return [51, 51, 51]
-            },
-          },
-          margin: { left: 10, right: 10 },
-          didParseCell: (data) => {
-            if (data.column.dataKey === 'title' && data.cell.text.length > 0) {
-              data.cell.text = data.cell.text.map(text =>
-                text.length > 100 ? text.slice(0, 100) + '...' : text
-              ) // Truncate in display if needed
-            }
-          },
-        })
+      autoTable(pdf, {
+        columns: columns,
+        body: tableData,
+        startY: 40,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [105, 123, 157] },
+      })
 
-        pdf.save(filename)
+      pdf.save(filename)
         break
       default:
         throw new Error('Unsupported export format')
     }
 
     exportProgress.value = 'Export completed!'
+    success('Export completed successfully!')
     setTimeout(() => {
       emit('close')
     }, 1000)
-  } catch (error) {
-    console.error('Export error:', error)
+  } catch (err) {
+    console.error('Export error:', err)
     exportProgress.value = 'Export failed. Please try again.'
+    error('Export failed. Please try again.')
     setTimeout(() => {
       isExporting.value = false
       exportProgress.value = ''

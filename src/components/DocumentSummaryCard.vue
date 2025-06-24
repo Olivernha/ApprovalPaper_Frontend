@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed,  watch } from 'vue'
 import { Star } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
 

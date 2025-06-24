@@ -65,7 +65,7 @@
             </div>
 
             <!-- File Attachment -->
-            <div v-if="document?.file_id" class="bg-green-50 rounded-lg p-4 border border-green-200">
+            <div v-if="document?.file_path" class="bg-green-50 rounded-lg p-4 border border-green-200">
               <h3 class="text-lg font-semibold text-green-900 mb-3">Attachment</h3>
 
               <div class="flex items-center justify-between">
@@ -100,13 +100,8 @@
                 </div>
               </div>
             </div>
-
-            <!-- Description -->
-            <div v-if="document?.description" class="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h3 class="text-lg font-semibold text-purple-900 mb-3">Description</h3>
-              <p class="text-purple-800">{{ document.description }}</p>
-            </div>
           </div>
+
         </div>
       </div>
 
