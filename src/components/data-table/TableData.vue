@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import TableHeader from './TableHeader.vue';
 import TableHead from './TableHead.vue';

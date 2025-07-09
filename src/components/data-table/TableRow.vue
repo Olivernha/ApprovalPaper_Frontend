@@ -131,174 +131,74 @@
       </div>
     </td>
 
-<!--    &lt;!&ndash; Enhanced Editable created_by &ndash;&gt;-->
-<!--    <td class="py-3 px-0" @click.stop>-->
-<!--      <div-->
-<!--        :class="[-->
-<!--          'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',-->
-<!--          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',-->
-<!--          isEditing(doc.id, 'created_by') ? 'bg-transparent p-0' : ''-->
-<!--        ]"-->
-<!--        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'created_by')"-->
-<!--      >-->
-<!--        <input-->
-<!--          v-if="isEditing(doc.id, 'created_by')"-->
-<!--          v-model="editingValues[doc.id].created_by"-->
-<!--          @keyup.enter="saveEdit(doc.id)"-->
-<!--          @keyup.escape="cancelEdit(doc.id)"-->
-<!--          :class="[-->
-<!--            'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm',-->
-<!--            'bg-white text-gray-900 shadow-lg transition-all duration-200',-->
-<!--            'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',-->
-<!--            'hover:border-indigo-400 hover:shadow-xl',-->
-<!--            'placeholder-gray-400 placeholder:italic',-->
-<!--            'animate-in fade-in-0 zoom-in-95 duration-150',-->
-<!--            isSaving ? 'border-green-500 bg-green-50' : '',-->
-<!--            hasError ? 'border-red-500 bg-red-50' : ''-->
-<!--          ]"-->
-<!--          type="text"-->
-<!--          :ref="el => setEditInput(el, doc.id, 'created_by')"-->
-<!--          @click.stop-->
-<!--          placeholder="Enter created by..."-->
-<!--        />-->
-<!--        <div v-else class="flex items-center justify-between w-full">-->
-<!--          <span class="block">{{ doc.created_by }}</span>-->
-<!--          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>-->
-<!--        </div>-->
+    <!-- Enhanced Editable created_date -->
+    <td class="py-3 px-0" @click.stop>
+      <div
+        :class="[
+          'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
+           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
+          isEditing(doc.id, 'created_date') ? 'bg-transparent p-0' : ''
+        ]"
+        @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'created_date')"
+      >
+        <input
+          v-if="isEditing(doc.id, 'created_date')"
+          v-model="editingValues[doc.id].created_date"
 
-<!--        &lt;!&ndash; Tooltip &ndash;&gt;-->
-<!--        <div-->
-<!--          v-if="isEditing(doc.id, 'created_by')"-->
-<!--          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full-->
-<!--                 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap-->
-<!--                 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200-->
-<!--                 pointer-events-none z-20 mb-1-->
-<!--                 after:content-[''] after:absolute after:top-full after:left-1/2-->
-<!--                 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent-->
-<!--                 after:border-t-gray-900"-->
-<!--        >-->
-<!--          Double-click to edit • Enter to save • Esc to cancel-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </td>-->
+          @keyup.enter="saveEdit(doc.id)"
+          @keyup.escape="cancelEdit(doc.id)"
+          :class="[
+            'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm pr-10',
+            'bg-white text-gray-900 shadow-lg transition-all duration-200',
+            'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',
+            'hover:border-indigo-400 hover:shadow-xl cursor-pointer',
+            'animate-in fade-in-0 zoom-in-95 duration-150',
+            isSaving ? 'border-green-500 bg-green-50' : '',
+            hasError ? 'border-red-500 bg-red-50' : ''
+          ]"
+          type="date"
+          :ref="el => setEditInput(el, doc.id, 'created_date')"
+          @click.stop
+        />
+        <div v-else class="flex items-center justify-between w-full">
+          <span class="block">{{ formatForDateTimeLocal(doc.created_date) }}</span>
+          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+        </div>
 
-<!--    &lt;!&ndash; Enhanced Editable created_date &ndash;&gt;-->
-<!--    <td class="py-3 px-0" @click.stop>-->
-<!--      <div-->
-<!--        :class="[-->
-<!--          'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',-->
-<!--           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',-->
-<!--          isEditing(doc.id, 'created_date') ? 'bg-transparent p-0' : ''-->
-<!--        ]"-->
-<!--        @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'created_date')"-->
-<!--      >-->
-<!--        <input-->
-<!--          v-if="isEditing(doc.id, 'created_date')"-->
-<!--          v-model="editingValues[doc.id].created_date"-->
+        <!-- Tooltip -->
+        <div
+          v-if="isEditing(doc.id, 'created_date')"
+          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full
+                 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap
+                 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200
+                 pointer-events-none z-20 mb-1
+                 after:content-[''] after:absolute after:top-full after:left-1/2
+                 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent
+                 after:border-t-gray-900"
+        >
+          Double-click to edit • Enter to save • Esc to cancel
+        </div>
+      </div>
+    </td>
 
-<!--          @keyup.enter="saveEdit(doc.id)"-->
-<!--          @keyup.escape="cancelEdit(doc.id)"-->
-<!--          :class="[-->
-<!--            'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm pr-10',-->
-<!--            'bg-white text-gray-900 shadow-lg transition-all duration-200',-->
-<!--            'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',-->
-<!--            'hover:border-indigo-400 hover:shadow-xl cursor-pointer',-->
-<!--            'animate-in fade-in-0 zoom-in-95 duration-150',-->
-<!--            isSaving ? 'border-green-500 bg-green-50' : '',-->
-<!--            hasError ? 'border-red-500 bg-red-50' : ''-->
-<!--          ]"-->
-<!--          type="date"-->
-<!--          :ref="el => setEditInput(el, doc.id, 'created_date')"-->
-<!--          @click.stop-->
-<!--        />-->
-<!--        <div v-else class="flex items-center justify-between w-full">-->
-<!--          <span class="block">{{ formatForDateTimeLocal(doc.created_date) }}</span>-->
-<!--          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Tooltip &ndash;&gt;-->
-<!--        <div-->
-<!--          v-if="isEditing(doc.id, 'created_date')"-->
-<!--          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full-->
-<!--                 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap-->
-<!--                 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200-->
-<!--                 pointer-events-none z-20 mb-1-->
-<!--                 after:content-[''] after:absolute after:top-full after:left-1/2-->
-<!--                 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent-->
-<!--                 after:border-t-gray-900"-->
-<!--        >-->
-<!--          Double-click to edit • Enter to save • Esc to cancel-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </td>-->
-    <!-- Enhanced Editable filed_by -->
-<!--    <td class="py-3 px-0" @click.stop>-->
-<!--      <div-->
-<!--        :class="[-->
-<!--          'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',-->
-<!--          userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',-->
-<!--          isEditing(doc.id, 'filed_by') ? 'bg-transparent p-0' : ''-->
-<!--        ]"-->
-<!--        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'filed_by')"-->
-<!--      >-->
-<!--        <input-->
-<!--          v-if="isEditing(doc.id, 'filed_by')"-->
-<!--          v-model="editingValues[doc.id].filed_by"-->
-<!--          @keyup.enter="saveEdit(doc.id)"-->
-<!--          @keyup.escape="cancelEdit(doc.id)"-->
-<!--          :class="[-->
-<!--            'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm',-->
-<!--            'bg-white text-gray-900 shadow-lg transition-all duration-200',-->
-<!--            'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',-->
-<!--            'hover:border-indigo-400 hover:shadow-xl',-->
-<!--            'placeholder-gray-400 placeholder:italic',-->
-<!--            'animate-in fade-in-0 zoom-in-95 duration-150',-->
-<!--            isSaving ? 'border-green-500 bg-green-50' : '',-->
-<!--            hasError ? 'border-red-500 bg-red-50' : ''-->
-<!--          ]"-->
-<!--          type="text"-->
-<!--          :ref="el => setEditInput(el, doc.id, 'filed_by')"-->
-<!--          @click.stop-->
-<!--          placeholder="Enter filed by..."-->
-<!--        />-->
-<!--        <div v-else class="flex items-center justify-between w-full">-->
-<!--          <span class="block">{{ doc.filed_by }}</span>-->
-<!--          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Tooltip &ndash;&gt;-->
-<!--        <div-->
-<!--          v-if="isEditing(doc.id, 'filed_by')"-->
-<!--          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full-->
-<!--                 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap-->
-<!--                 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200-->
-<!--                 pointer-events-none z-20 mb-1-->
-<!--                 after:content-[''] after:absolute after:top-full after:left-1/2-->
-<!--                 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent-->
-<!--                 after:border-t-gray-900"-->
-<!--        >-->
-<!--          Double-click to edit • Enter to save • Esc to cancel-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </td>-->
-<!--     Enhanced Editable filed_date -->
+    <!-- Enhanced Editable filed_date -->
     <td class="py-3 px-4" @click.stop>
-          <div
-            :class="[
+      <div
+        :class="[
               'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
                userStore.userData?.isAdmin && doc.status !== 'Not Filed' ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
               isEditing(doc.id, 'filed_date') ? 'bg-transparent p-0' : ''
             ]"
-            @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'filed_date')"
-          >
-            <input
-              v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
-              v-model="editingValues[doc.id].filed_date"
-              @blur="cancelEdit(doc.id)"
-              @keyup.enter="saveEdit(doc.id)"
-              @keyup.escape="cancelEdit(doc.id)"
+        @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'filed_date')"
+      >
+        <input
+          v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
+          v-model="editingValues[doc.id].filed_date"
+          @blur="cancelEdit(doc.id)"
+          @keyup.enter="saveEdit(doc.id)"
+          @keyup.escape="cancelEdit(doc.id)"
 
-              :class="[
+          :class="[
                 'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm pr-10',
                 'bg-white text-gray-900 shadow-lg transition-all duration-200',
                 'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',
@@ -307,30 +207,30 @@
                 isSaving ? 'border-green-500 bg-green-50' : '',
                 hasError ? 'border-red-500 bg-red-50' : ''
               ]"
-              type="date"
-              :ref="el => setEditInput(el, doc.id, 'filed_date')"
-              @click.stop
-            />
-            <div v-else class="flex items-center justify-between w-full">
-              <span class="block">{{ formatForDateTimeLocal(doc.filed_date) }}</span>
-              <span  v-if="userStore.userData?.isAdmin && doc.status !== 'Not Filed'" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
-            </div>
+          type="date"
+          :ref="el => setEditInput(el, doc.id, 'filed_date')"
+          @click.stop
+        />
+        <div v-else class="flex items-center justify-between w-full">
+          <span class="block">{{ formatForDateTimeLocal(doc.filed_date) }}</span>
+          <span  v-if="userStore.userData?.isAdmin && doc.status !== 'Not Filed'" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+        </div>
 
-            <!-- Tooltip -->
-            <div
-              v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
-              class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full
+        <!-- Tooltip -->
+        <div
+          v-if="isEditing(doc.id, 'filed_date') && doc.status !== 'Not Filed'"
+          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full
                      bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap
                      opacity-0 group-focus-within:opacity-100 transition-opacity duration-200
                      pointer-events-none z-20 mb-1
                      after:content-[''] after:absolute after:top-full after:left-1/2
                      after:transform after:-translate-x-1/2 after:border-4 after:border-transparent
                      after:border-t-gray-900"
-            >
-              Double-click to edit • Enter to save • Esc to cancel
-            </div>
-          </div>
-        </td>
+        >
+          Double-click to edit • Enter to save • Esc to cancel
+        </div>
+      </div>
+    </td>
 
     <td class="py-3 px-4 text-right " @click.stop>
       <button
@@ -369,8 +269,13 @@
           <InfoIcon class="w-4 h-4" />View  Details</button>
         <button
           @click="openDeleteModal(doc)"
-          v-if="userStore.userData?.isAdmin || username === doc.created_by"
-          class="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm text-red-600 cursor-pointer"
+          v-if="canDeleteDocument(doc)"
+          :class="[
+            'w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm cursor-pointer',
+            canDeleteDocument(doc) ? 'text-red-600' : 'text-gray-400 cursor-not-allowed'
+          ]"
+          :disabled="!canDeleteDocument(doc)"
+          :title="!canDeleteDocument(doc) ? 'Only the latest document can be deleted' : ''"
         >
           <TrashIcon class="w-4 h-4" />
           Delete
@@ -410,6 +315,46 @@ const isDeleteModalOpen = ref(false)
 const isSaving = ref(false)
 const hasError = ref(false)
 const { success, error} = useToast()
+
+// New computed property to determine if a document can be deleted
+const canDeleteDocument = (doc: ApiDocument) => {
+  // Admin can delete any document
+  if (userStore.userData?.isAdmin) {
+    return true
+  }
+
+  // For regular users, only allow deletion if:
+  // 1. They are the creator of the document
+  // 2. AND it's their latest document
+  if (username.value === doc.created_by) {
+    return isLatestDocumentByUser(doc)
+  }
+
+  return false
+}
+
+// Helper function to check if the document is the latest by the user
+const isLatestDocumentByUser = (doc: ApiDocument) => {
+  // Get all documents created by the same user
+  const userDocuments = documents.value.filter(d => d.created_by === doc.created_by)
+
+  // If no documents found, return false
+  if (userDocuments.length === 0) {
+    return false
+  }
+
+  // Sort by creation date (most recent first)
+  // Assuming created_date is either a Date object or a string that can be parsed
+  const sortedDocs = userDocuments.sort((a, b) => {
+    const dateA = new Date(a.created_date || 0)
+    const dateB = new Date(b.created_date || 0)
+    return dateB.getTime() - dateA.getTime()
+  })
+
+  // Check if the current document is the latest (first in sorted array)
+  return sortedDocs[0].id === doc.id
+}
+
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'filed':
@@ -499,7 +444,6 @@ const startEditing = (id: string, field: string) => {
 }
 
 // Save edited cell
-
 const saveEdit = async (id: string) => {
   if (!editingCell.value) return
   isSaving.value = true
@@ -522,7 +466,6 @@ const saveEdit = async (id: string) => {
   }
 }
 
-
 // Cancel editing
 const cancelEdit = (id: string) => {
   editingCell.value = null
@@ -544,6 +487,13 @@ const openEditModal = (doc: ApiDocument) => {
 }
 
 const openDeleteModal = (doc: ApiDocument) => {
+  // Check if deletion is allowed before opening modal
+  if (!canDeleteDocument(doc)) {
+    error('Delete Not Allowed', 'Only the latest document can be deleted')
+    activeDropdown.value = null
+    return
+  }
+
   selectedDocument.value = doc
   isDeleteModalOpen.value = true
   activeDropdown.value = null
@@ -571,10 +521,13 @@ const deleteDocument = async (doc: any) => {
   console.log(doc)
   try {
     await documentStore.deleteDocument(doc.id)
+    success('Document Deleted', 'The document has been successfully deleted')
   } catch (error) {
     console.error('Failed to delete document:', error)
+    error('Delete Failed', 'Failed to delete the document')
   }
   activeDropdown.value = null
+  isDeleteModalOpen.value = false
 }
 
 const downloadDocument = async (doc: any) => {

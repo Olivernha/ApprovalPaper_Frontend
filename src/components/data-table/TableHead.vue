@@ -32,6 +32,14 @@
 <!--        </div>-->
 <!--      </th>-->
       <th class="py-3 px-4 font-medium">
+       <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_date')">
+        Created Date
+         <component :is="getSortIcon('created_date')" class="h-4 w-4 transition-transform duration-200"
+           :class="{ 'opacity-50': isLoading }" />
+       </div>
+     </th>
+
+      <th class="py-3 px-4 font-medium">
         <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('filed_date')">
           Filed Date
           <component :is="getSortIcon('filed_date')" class="h-4 w-4 transition-transform duration-200"
@@ -42,13 +50,6 @@
 <!--        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_by')">-->
 <!--          Created By-->
 <!--          <component :is="getSortIcon('created_by')" class="h-4 w-4 transition-transform duration-200"-->
-<!--            :class="{ 'opacity-50': isLoading }" />-->
-<!--        </div>-->
-<!--      </th>-->
-<!--      <th class="py-3 px-4 font-medium">-->
-<!--        <div class="flex items-center gap-1 cursor-pointer" @click="handleSort('created_date')">-->
-<!--          Date-->
-<!--          <component :is="getSortIcon('created_date')" class="h-4 w-4 transition-transform duration-200"-->
 <!--            :class="{ 'opacity-50': isLoading }" />-->
 <!--        </div>-->
 <!--      </th>-->

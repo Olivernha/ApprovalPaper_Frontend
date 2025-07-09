@@ -23,11 +23,11 @@ onMounted(async () => {
 
 <template>
   <main class="flex-1 py-8 px-6 bg-[#f5f5f5]">
-    <div class="flex flex-col lg:flex-row gap-6">
+    <div class="flex flex-col lg:flex-row gap-2">
       <TableData :dept_id="props.id"/>
       <div class="flex flex-col gap-6">
-        <AddDocumentForm  :id="props.id"/>
-        <DocumentSummaryCard v-if="userStore.userData?.isAdmin"  :id="props.id"/>
+        <AddDocumentForm v-if="!userStore.userData?.isAdmin" :id="props.id"/>
+        <!-- <DocumentSummaryCard v-if="userStore.userData?.isAdmin"  :id="props.id"/> -->
       </div>
     </div>
   </main>
