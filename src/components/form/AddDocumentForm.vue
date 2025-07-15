@@ -1,7 +1,7 @@
 
 <template>
-  <div class="relative w-full h-full xl:h-96 xl:w-72 2xl:w-96 bg-white rounded-lg p-6">
-    <h2 class="text-2xl font-medium mb-2">Add a new document</h2>
+  <div class="relative w-full h-full xl:h-100 xl:w-72 2xl:w-96 bg-white rounded-lg p-6">
+    <h2 class="text-xl font-medium mb-2">{{ dynamicTitle }}</h2>
     <p class="text-gray-600 text-sm mb-6">
       Fill in the fields below and press add to generate a reference number
     </p>
@@ -128,7 +128,7 @@
 <script setup lang="ts">
 import { useDocumentStore } from '@/stores/documentStore'
 import { ChevronDown as ChevronDownIcon } from 'lucide-vue-next'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useDocumentTypeStore } from '@/stores/documentTypeStore'
 import type { NewDocument } from '@/types/documentTypes'
 import { useToast } from '@/composables/useToast.ts'
@@ -137,14 +137,19 @@ const { success, error } = useToast()
 const documentTypeStore = useDocumentTypeStore()
 const store = useDocumentStore()
 
+
 const props = defineProps<{
-  id: string
+  id: string,
+  isAdmin?: boolean // Optional prop to indicate if the user is an admin
 }>()
 
 // Loading states
 const isSubmitting = ref(false)
 const isInitialLoading = ref(true)
+const dynamicTitle = computed(() =>{
 
+  return props.isAdmin ? 'Generate New Reference Number' : 'Add New Document'
+})
 const newDocument = ref<NewDocument>({
   department_id: props.id,
   document_type_id: '',

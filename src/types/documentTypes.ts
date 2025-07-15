@@ -19,9 +19,12 @@ export interface DocumentState {
   exportDocuments: Document[]
   documents: Document[]
   searchQuery: string
+  searchGlobalQuery: string
   selectedDocumentType: string
   statusFilter: string
   departmentId: string
+  departmentName: string
+  documentTypeName: string
   rowsPerPage: number
   currentPage: number
   sortField: string
@@ -48,7 +51,9 @@ export type ApiDocument = {
   department_id?: string
   file_path?: string
   filed_by?: string
-  filed_date?: string
+  filed_date?: string,
+  department_name?: string
+  document_type_name?: string
 }
 export type ApiDocumentType = {
   _id: string

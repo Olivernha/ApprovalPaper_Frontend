@@ -43,7 +43,6 @@ const computeBtnDisabled = computed(() => {
 function convertToCSV(data: ApiDocument[], includeHeaders = true) {
   const headers = [
     'RefNo',
-
     'Title',
     'Filed By',
     'Filed Date',
@@ -95,10 +94,11 @@ async function handleExport() {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
 
     exportProgress.value = 'Fetching documents...'
-    await documentStore.fetchAllDocuments(route.params.id as string)
+    await documentStore.fetchAllDocuments(route.params.id as string, route.query.status as string)
     console.log('Fetched documents:', documentStore.exportDocuments)
 
     exportProgress.value = 'Processing documents...'
+
     const dataToExport = exportOptions.selectedOnly
       ? documentStore.selectedCount > 0
         ? documentStore.exportDocuments.filter((doc: ApiDocument) =>
@@ -166,7 +166,7 @@ async function handleExport() {
         refNo: (doc.ref_no || '').slice(0, 50), // Limit lengths
         title: (doc.title || '').slice(0, 200), // Limit title to 200 chars
         filedBy: (doc.filed_by || '').slice(0, 50),
-        filedDate: (doc.filed_date || '').slice(0, 50),
+        filedDate: (doc.filed_date || '').slice(0, 10),
         createdBy: (doc.created_by || '').slice(0, 50),
         date: (doc.created_date || '').slice(0, 10),
         status: (doc.status || '').slice(0, 50),
@@ -296,15 +296,7 @@ async function handleExport() {
           <div>
             <label class="text-sm font-medium text-[#344054] mb-2 block">Export Options</label>
             <div class="space-y-2">
-              <label class="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  v-model="exportOptions.includeHeaders"
-                  class="rounded"
-                  :disabled="isExporting"
-                />
-                <span class="text-[#344054]">Include column headers</span>
-              </label>
+
               <label class="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -316,15 +308,7 @@ async function handleExport() {
                 >Export selected rows only ({{ documentStore.selectedCount }} selected)</span
                 >
               </label>
-              <label class="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  v-model="exportOptions.includeTimestamp"
-                  class="rounded"
-                  :disabled="isExporting"
-                />
-                <span class="text-[#344054]">Include export timestamp</span>
-              </label>
+
             </div>
           </div>
 

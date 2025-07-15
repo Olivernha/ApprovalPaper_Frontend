@@ -35,14 +35,6 @@
               Suspend
             </span>
           </button>
-          <button @click="selectedAction = 'Delete'"
-            class="flex-1 border border-[#fc0000] text-[#e81a1a] p-3 rounded-md"
-            :class="{ 'bg-gray-100': selectedAction === 'Delete' }">
-            <span class="flex items-center justify-center gap-2">
-              <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Delete'" />
-              Delete
-            </span>
-          </button>
         </div>
 
         <div class="flex gap-3 pt-4">
@@ -77,7 +69,7 @@ const resetSelection = () => {
 const applyAction = () => {
   emit('applyAction', selectedAction.value);
   selectedAction.value = 'Not Filed'; // Reset after applying
-  closeModal(); 
+  closeModal();
 };
 
 </script>

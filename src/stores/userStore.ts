@@ -34,8 +34,8 @@ export const useUserStore = defineStore('userStore', {
     },
     // fetchUserData() {
     //   //MOCKED DATA
-    //   this.setUsername('alvinloh')
-    //   this.userData = { full_name: 'Mocked User', isAdmin: true }
+    //   this.setUsername('anyone')
+    //   this.userData = { full_name: 'Anyone', isAdmin: false }
     // },
   },
 })

@@ -65,7 +65,7 @@
             </div>
 
             <!-- File Attachment -->
-            <div v-if="document?.file_path" class="bg-green-50 rounded-lg p-4 border border-green-200">
+            <div v-if="document?.file_path && canEdit " class="bg-green-50 rounded-lg p-4 border border-green-200">
               <h3 class="text-lg font-semibold text-green-900 mb-3">Attachment</h3>
 
               <div class="flex items-center justify-between">

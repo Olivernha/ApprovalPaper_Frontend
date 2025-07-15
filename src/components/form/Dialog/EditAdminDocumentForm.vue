@@ -21,15 +21,15 @@ const props = defineProps<EditAdminDocumentFormProps>()
 const emit = defineEmits<{
   (event: 'close'): void
   (event: 'save', document: EditAdminDocumentFormProps['document']): void
-  (event: 'delete', document: EditAdminDocumentFormProps['document']): void
 }>()
 
 const { success, error, warning } = useToast()
 
 const formatForDateTimeLocal = (date: Date | string | undefined): string => {
   if (!date) return ''
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toISOString().split('T')[0] // returns "YYYY-MM-DD"
+
+  const d = date.toString()
+  return d.split('T')[0] // Returns date in YYYY-MM-DD format
 }
 
 const formatToDate = (dateString: string): Date | null => {
@@ -65,17 +65,26 @@ watch(
   () => selectedAction.value,
   (newAction) => {
     if (newAction === 'Filed') {
-      const now = new Date()
-      filedDateForInput.value = formatForDateTimeLocal(now)
-      editForm.filed_date = now
-      editForm.filed_by = useStore.userData?.full_name
+      // Only set if it's not already set
+      if (!editForm.filed_date) {
+        const now = new Date()
+        const yyyyMmDd = now.toISOString().split('T')[0] // "yyyy-MM-dd"
+        filedDateForInput.value = yyyyMmDd
+        editForm.filed_date = formatToDate(yyyyMmDd)
+      }
+
+      if (!editForm.filed_by) {
+        editForm.filed_by = useStore.userData?.full_name
+      }
     }
+
     if (newAction === 'Not Filed') {
       filedDateForInput.value = ''
       editForm.filed_date = null
       editForm.filed_by = ''
     }
-    if (newAction === 'Suspended') {
+
+    if (newAction === 'Suspended' && !editForm.filed_by) {
       editForm.filed_by = useStore.userData?.full_name
     }
   },
@@ -117,12 +126,6 @@ const applyChanges = async () => {
   isLoading.value = true
 
   try {
-    if (selectedAction.value === 'Delete') {
-      emit('delete', props.document)
-      success('Document Deleted', 'The document has been successfully deleted')
-      return
-    }
-
     const updatedDocument: EditAdminDocumentFormProps['document'] = {
       ...editForm,
       // Use original created_date if editForm.created_date matches original
@@ -213,6 +216,44 @@ const handleFileDrop = (event: DragEvent) => {
       </div>
 
       <div class="p-6 space-y-6">
+        <!-- Action -->
+        <div>
+          <label class="block text-sm font-medium text-[#344054] mb-2">Action</label>
+          <div class="flex gap-3 py-4">
+            <button
+              @click="selectedAction = 'Not Filed'"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Not Filed' }"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Not Filed'" />
+                Unfile
+              </span>
+            </button>
+
+            <button
+              @click="selectedAction = 'Filed'"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Filed' }"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Filed'" />
+                File
+              </span>
+            </button>
+
+            <button
+              @click="selectedAction = 'Suspended'"
+              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
+              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Suspended' }"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Suspended'" />
+                Suspend
+              </span>
+            </button>
+          </div>
+        </div>
         <!-- Title -->
         <div>
           <label class="block text-sm font-medium text-[#344054] mb-1">
@@ -329,56 +370,6 @@ const handleFileDrop = (event: DragEvent) => {
                 placeholder="Select date"
               />
             </div>
-          </div>
-        </div>
-
-        <!-- Action -->
-        <div>
-          <label class="block text-sm font-medium text-[#344054] mb-2">Action</label>
-          <div class="flex gap-3 py-4">
-            <button
-              @click="selectedAction = 'Not Filed'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
-              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Not Filed' }"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Not Filed'" />
-                Unfile
-              </span>
-            </button>
-
-            <button
-              @click="selectedAction = 'Filed'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
-              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Filed' }"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Filed'" />
-                File
-              </span>
-            </button>
-
-            <button
-              @click="selectedAction = 'Suspended'"
-              class="flex-1 border border-[#d0d5dd] text-[#344054] p-3 rounded-md transition-colors hover:bg-gray-50"
-              :class="{ 'bg-gray-100 border-gray-400': selectedAction === 'Suspended' }"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Suspended'" />
-                Suspend
-              </span>
-            </button>
-
-            <button
-              @click="selectedAction = 'Delete'"
-              class="flex-1 border border-[#fc0000] text-[#e81a1a] p-3 rounded-md transition-colors hover:bg-red-50"
-              :class="{ 'bg-red-100 border-red-600': selectedAction === 'Delete' }"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <CheckIcon class="w-4 h-4" v-if="selectedAction === 'Delete'" />
-                Delete
-              </span>
-            </button>
           </div>
         </div>
 

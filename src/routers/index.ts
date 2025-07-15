@@ -20,6 +20,11 @@ const routes = [
     component: () => import('../views/HomeView.vue'),
   },
   {
+    path: '/search', // This path will handle the search results
+    name: 'SearchResults',
+    component: () => import('../views/SearchResultsView.vue'),
+  },
+  {
     path: '/department/:id',
     name: 'Department',
     component: () => import('../views/ApprovalPaper.vue'),

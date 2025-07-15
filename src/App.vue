@@ -7,14 +7,18 @@ import LoadingBar from './components/LoadingBar.vue'
 import { useRoute } from 'vue-router'
 import NavigationBreadcrumb from './components/NavigationBreadcrumb.vue'
 import ToastContainer from '@/components/ui/toastContainer.vue'
+import { useUserStore } from './stores/userStore'
 
 const departmentStore = useDepartmentStore()
+const userStore = useUserStore()
 const isLoading = ref(true)
 
 onMounted(async () => {
   isLoading.value = true
   try {
     await departmentStore.fetchDepartments()
+    await userStore.fetchUserData()
+
   } finally {
     isLoading.value = false
   }
@@ -36,6 +40,12 @@ const breadcrumbItems = computed(() => {
   const items = []
 
   switch (route.name) {
+    case 'SearchResults':
+      items.push({
+        name: 'Search Results',
+        path: undefined,
+      })
+      break
     case 'Department':
       items.push({
         name: 'Departments',
@@ -44,7 +54,7 @@ const breadcrumbItems = computed(() => {
       if (departmentName.value) {
         items.push({
           name: departmentName.value,
-          path: undefined, // Current page, no link
+          path: undefined,
         })
       }
       break

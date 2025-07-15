@@ -9,9 +9,12 @@ export const useDocumentStore = defineStore('documentStore', {
     exportDocuments: [],
     documents: [],
     searchQuery: '',
+    searchGlobalQuery: '',
     selectedDocumentType: '',
     statusFilter: '',
     departmentId: '',
+    departmentName: '',
+    documentTypeName: '',
     rowsPerPage: 10,
     currentPage: 1,
     sortField: 'created_date',
@@ -25,7 +28,7 @@ export const useDocumentStore = defineStore('documentStore', {
     countStatus: {},
     // New properties for row coloring
     recentlyAddedDocuments: new Set() as Set<string>,
-    newDocumentColor: 'bg-green-50 border-green-200'
+    newDocumentColor: 'bg-green-50 border-green-200',
   }),
 
   getters: {
@@ -73,9 +76,11 @@ export const useDocumentStore = defineStore('documentStore', {
   actions: {
 
     resetState(){
+      this.searchQuery = ''
       this.exportDocuments = []
       this.documents = []
       this.searchQuery = ''
+      this.searchGlobalQuery = ''
       this.selectedDocumentType = ''
       this.statusFilter = ''
       this.departmentId = ''
@@ -110,12 +115,54 @@ export const useDocumentStore = defineStore('documentStore', {
     clearNewDocumentMarkings() {
       this.recentlyAddedDocuments.clear()
     },
-
-    async fetchAllDocuments(departmentId: string) {
+    async fetchSearchResults(query: string) {
       this.isLoading = true
       try {
         const response = await api.get(
-          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document`,
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/search`,
+          {
+            params: { search: query },
+          },
+        )
+        if (response.status !== 200) {
+          console.error('Failed to fetch search results: ', response.statusText)
+          throw new Error('Failed to fetch search results')
+        }
+        const data = await response.data
+        this.documents = (data || []).map((doc: ApiDocument) => ({
+          ref_no: doc.ref_no,
+          title: doc.title,
+          created_by: doc.created_by,
+          created_date: doc.created_date,
+          status: doc.status,
+          document_type_id: doc.document_type_id,
+          department_id: doc.department_id,
+          id: doc._id,
+          file_path: doc.file_path || '',
+          filed_by: doc.filed_by || '',
+          filed_date: doc.filed_date || '',
+          department_name: doc.department_name|| '',
+          document_type_name: doc.document_type_name || '',
+        }))
+        this.totalDocuments = data.total || 0
+        this.totalPages = data.pages || 1
+        this.currentPage = data.page || 1
+        this.rowsPerPage = data.limit || 10
+        this.hasNext = data.has_next || false
+        this.hasPrev = data.has_prev || false
+      } catch (error) {
+        console.error('Error fetching search results:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async fetchAllDocuments(departmentId: string,status ='' ) {
+      console.log('Selected Doc Type:', this.selectedDocumentType)
+      this.isLoading = true
+      try {
+        const response = await api.get(
+          import.meta.env.VITE_BACKEND_API_BASE_URL + `/document`
         )
         if (response.status !== 200) {
           console.error('Failed to fetch document  ', response.statusText)
@@ -124,6 +171,7 @@ export const useDocumentStore = defineStore('documentStore', {
         const data = await response.data.filter((doc: ApiDocument) =>
           doc.department_id === departmentId &&
           (!this.selectedDocumentType || doc.document_type_id === this.selectedDocumentType)
+          && (!status || doc.status === status)
         )
 
         this.exportDocuments = data
@@ -136,6 +184,11 @@ export const useDocumentStore = defineStore('documentStore', {
 
     async fetchDocuments() {
       console.log('Fetching documents with params:')
+
+      if (this.searchGlobalQuery) {
+        await this.fetchSearchResults(this.searchGlobalQuery)
+        return;
+      }
       this.isLoading = true
       try {
         const fieldMap: { [key: string]: string } = {

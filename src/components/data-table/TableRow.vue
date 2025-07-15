@@ -22,7 +22,6 @@
   <EditAdminDocumentForm
     v-if="userStore.userData?.isAdmin && isEditModalOpen"
     :isModalOpen="isEditModalOpen"
-    @delete="deleteDocument"
     :document="selectedDocument"
     @close="closeEditModal"
     @save="handleDocumentUpdate"
@@ -130,9 +129,58 @@
         </div>
       </div>
     </td>
+    <!-- Enhanced Editable created_by -->
+    <td v-if="userStore.userData?.isAdmin" class="py-3 px-0" @click.stop>
+      <div
+        :class="[
+          'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
+           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : '',
+          isEditing(doc.id, 'created_date') ? 'bg-transparent p-0' : ''
+        ]"
+        @dblclick="userStore.userData?.isAdmin &&  startEditing(doc.id, 'created_by')"
+      >
+         <textarea
+           v-if="isEditing(doc.id, 'created_by') "
+           v-model.trim="editingValues[doc.id].created_by"
+           @keyup.enter="saveEdit(doc.id)"
+           @blur="cancelEdit(doc.id)"
+           @keyup.escape="cancelEdit(doc.id)"
+           :class="[
+            'w-full border-2 border-blue-500 rounded-lg px-3 py-2 text-sm',
+            'bg-white text-gray-900 shadow-lg transition-all duration-200',
+            'focus:border-[#A41F36] focus:ring-4 focus:ring-[#A41F36]/10 focus:outline-none',
+            'hover:border-indigo-400 hover:shadow-xl',
+            'placeholder-gray-400 placeholder:italic',
+            'animate-in fade-in-0 zoom-in-95 duration-150',
+            isSaving ? 'border-green-500 bg-green-50' : '',
+            hasError ? 'border-red-500 bg-red-50' : ''
+          ]"
+           :ref="el => setEditInput(el, doc.id, 'created_by')"
+           @click.stop
+           placeholder="Enter creator..."
+         />
+        <div v-else class="flex items-center justify-between w-full">
+          <span class="block">{{ doc.created_by }}</span>
+          <span  v-if="userStore.userData?.isAdmin" class="opacity-0 group-hover:opacity-60 text-xs transition-opacity duration-200">✏️</span>
+        </div>
 
+        <!-- Tooltip -->
+        <div
+          v-if="isEditing(doc.id, 'created_by')"
+          class="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full
+                 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap
+                 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200
+                 pointer-events-none z-20 mb-1
+                 after:content-[''] after:absolute after:top-full after:left-1/2
+                 after:transform after:-translate-x-1/2 after:border-4 after:border-transparent
+                 after:border-t-gray-900"
+        >
+          Double-click to edit • Enter to save • Esc to cancel
+        </div>
+      </div>
+    </td>
     <!-- Enhanced Editable created_date -->
-    <td class="py-3 px-0" @click.stop>
+    <td v-if="userStore.userData?.isAdmin" class="py-3 px-0" @click.stop>
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
@@ -319,10 +367,8 @@ const { success, error} = useToast()
 // New computed property to determine if a document can be deleted
 const canDeleteDocument = (doc: ApiDocument) => {
   // Admin can delete any document
-  if (userStore.userData?.isAdmin) {
-    return true
-  }
 
+  if (doc.status !== 'Not Filed') return false;
   // For regular users, only allow deletion if:
   // 1. They are the creator of the document
   // 2. AND it's their latest document

@@ -2,13 +2,17 @@
 import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 import { useDocumentStore } from '@/stores/documentStore'
-import {  Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
+import { Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useLoadingBar } from '@/composables/useLoadingBar'
+import { useRouter } from 'vue-router' // Import useRouter
 
 const departmentStore = useDepartmentStore()
 const documentStore = useDocumentStore()
+const router = useRouter() // Initialize router
+
 const departments = computed(() => departmentStore.departments)
-const searchQuery = ref('')
+const searchQuery = ref('') // For filtering departments on this page
+const documentSearchQuery = ref('') // For searching documents across all departments
 
 const isLoading = computed(() => departmentStore.isLoading)
 const { start: startLoading, finish: finishLoading } = useLoadingBar()
@@ -28,7 +32,6 @@ const departmentCounts = reactive<
 
 const filteredDepartments = computed(() => {
   if (!searchQuery.value) return departments.value
-
   const query = searchQuery.value.toLowerCase()
   return departments.value.filter((dept) => dept.name.toLowerCase().includes(query))
 })
@@ -48,7 +51,6 @@ const getDepartmentDocumentCounts = (departmentId: string) => {
 // Function to fetch document counts for all departments
 const fetchAllDepartmentCounts = async () => {
   const tempCounts: Record<string, { unfiled: number; filed: number; suspended: number; total: number }> = {};
-
   try {
     const fetchPromises = departments.value.map(async (department) => {
       try {
@@ -65,9 +67,7 @@ const fetchAllDepartmentCounts = async () => {
         tempCounts[department._id] = { unfiled: 0, filed: 0, suspended: 0, total: 0 };
       }
     });
-
     await Promise.all(fetchPromises);
-
     // Update reactive object once
     Object.assign(departmentCounts, tempCounts);
   } catch (error) {
@@ -75,15 +75,10 @@ const fetchAllDepartmentCounts = async () => {
   }
 };
 
-// Fetch counts when departments change
-const loadDepartmentCounts = async () => {
-  if (departments.value.length > 0) {
-    startLoading()
-    try {
-      await fetchAllDepartmentCounts()
-    } finally {
-      finishLoading()
-    }
+// Function to handle document search
+const searchDocuments = () => {
+  if (documentSearchQuery.value.trim()) {
+    router.push({ name: 'SearchResults', query: { q: documentSearchQuery.value.trim() } })
   }
 }
 
@@ -91,18 +86,28 @@ const loadDepartmentCounts = async () => {
 watch(
   departments,
   () => {
-    loadDepartmentCounts()
+    if (departments.value.length > 0) {
+      startLoading()
+      try {
+        fetchAllDepartmentCounts()
+      } finally {
+        finishLoading()
+      }
+    }
   },
   { immediate: true },
 )
 
 onMounted(() => {
-  loadDepartmentCounts()
-
+  if (departments.value.length > 0) {
+    startLoading()
+    try {
+      fetchAllDepartmentCounts()
+    } finally {
+      finishLoading()
+    }
+  }
 })
-
-
-
 </script>
 
 <template>
@@ -120,6 +125,23 @@ onMounted(() => {
           <p class="text-[#667085]">Browse and access department documents</p>
         </div>
       </div>
+    </div>
+
+    <!-- Search Input for Documents -->
+    <div class="flex items-center gap-3 mb-6">
+      <input
+        type="text"
+        v-model="documentSearchQuery"
+        placeholder="Search documents across all departments..."
+        class="flex-1 px-4 py-2 border border-[#103a8e] rounded-md focus:outline-none focus:ring-2 focus:ring-[#697b9d]"
+        @keyup.enter="searchDocuments"
+      />
+      <button
+        @click="searchDocuments"
+        class="bg-[#697b9d] hover:bg-[#5a6b8a] text-white px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#697b9d] focus:ring-offset-2"
+      >
+        Search Documents
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -162,7 +184,6 @@ onMounted(() => {
               </div>
               <h3 class="text-lg font-medium text-[#344054]">{{ department.name }}</h3>
             </div>
-
             <!-- Total Document Count Badge -->
             <div class="flex items-center gap-2 bg-[#f9fafb] px-3 py-1.5 rounded-full border border-[#eaecf0]">
               <FileText class="w-4 h-4 text-[#667085]" />
@@ -172,7 +193,6 @@ onMounted(() => {
               <span class="text-xs text-[#667085]">docs</span>
             </div>
           </div>
-
           <!-- Status breakdown -->
           <div class="grid grid-cols-3 gap-3">
             <!-- Enhanced Unfiled Section -->
@@ -195,7 +215,6 @@ onMounted(() => {
                 class="w-2 h-2 bg-[#dc2626] rounded-full mx-auto mt-2 animate-pulse"
               ></div>
             </router-link>
-
             <!-- Filed Section -->
             <router-link
               :to="{ name: 'Department', params: { id: department._id }, query: { status: 'Filed' } }"
@@ -211,7 +230,6 @@ onMounted(() => {
                 {{ getDepartmentDocumentCounts(department._id).filed }}
               </div>
             </router-link>
-
             <!-- Suspended Section -->
             <router-link
               :to="{ name: 'Department', params: { id: department._id }, query: { status: 'Suspended' } }"
@@ -229,7 +247,6 @@ onMounted(() => {
             </router-link>
           </div>
         </div>
-
         <!-- Action Button -->
         <div class="p-5">
           <router-link
