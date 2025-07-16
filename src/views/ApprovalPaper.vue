@@ -5,15 +5,15 @@ import DocumentSummaryCard from '@/components/DocumentSummaryCard.vue'
 import { onMounted, ref } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import { PlusIcon, XIcon } from 'lucide-vue-next'
-import { useDocumentTypeStore } from '@/stores/documentTypeStore.ts' // Import PlusIcon and XIcon
+import { useDocumentTypeStore } from '@/stores/documentTypeStore.ts'
 
 const userStore = useUserStore()
 const documentTypeStore = useDocumentTypeStore();
 const props = defineProps<{
-  id: string // deparmentID
+  id: string
 }>()
 
-// Controls the visibility of the AddDocumentForm for admins
+
 const isAddDocumentFormCollapsed = ref(true)
 const isUserDataLoaded = ref(false)
 const hasBeenClicked = ref(false)
