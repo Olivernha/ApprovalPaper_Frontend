@@ -37,7 +37,7 @@
     v-for="(doc, index) in documents"
     :key="doc.id"
     :class="[
-      'border-b border-b-gray-300 transition-all duration-500 hover:bg-gray-50 xl:text-sm 2xl:text-base cursor-pointer',
+      ' border-b border-b-gray-300 transition-all duration-500 hover:bg-gray-50 xl:text-sm 2xl:text-base cursor-pointer',
       documentStore.getDocumentRowClass(doc.id || ''),
       documentStore.recentlyAddedDocuments.has(doc.id || '') ? 'animate-highlight' : '',
       { 'bg-blue-50': documentStore.isSelected(doc.id || '') },

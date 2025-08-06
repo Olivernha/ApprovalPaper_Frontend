@@ -9,7 +9,7 @@
         </div>
         <div>
           <h1 class="text-2xl font-semibold text-[#344054]">
-            Search Results for "{{ searchQuery }}"
+            Search Results for "{{ searchQuery.search }}"
           </h1>
           <p class="text-[#667085]">Documents matching your query across all departments</p>
         </div>
@@ -133,8 +133,21 @@ const refreshDocuments = async () => {
 }
 
 onMounted(async () => {
+
   try {
-    searchQuery.value = (route.query.q as string) || ''
+    // router.push({
+    //   name: 'SearchResults',
+    //   query: {
+    //     ...router.currentRoute.value.query,
+    //     query: documentSearchQuery.value,
+    //     status: searchQuery.value,
+    //   },
+    // });
+    searchQuery.value = {
+      search: route.query.query || '',
+      status: route.query.status || '',
+    }
+    console.log(searchQuery.value)
     documentStore.searchGlobalQuery = searchQuery.value
     await documentStore.fetchSearchResults(searchQuery.value)
   } finally {

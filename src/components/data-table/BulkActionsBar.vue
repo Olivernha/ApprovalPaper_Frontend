@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRefs } from 'vue'
+import { ref, computed} from 'vue'
 import { Settings as SettingsIcon } from 'lucide-vue-next'
 import { useDocumentStore } from '@/stores/documentStore'
 import BulkActionForm from '../form/Dialog/BulkActionForm.vue'

@@ -138,7 +138,7 @@ const applyChanges = async () => {
       filed_date: editForm.filed_date ? new Date(editForm.filed_date).toISOString() : '',
       status: selectedAction.value,
     }
-
+    console.log('Updated Document:', updatedDocument)
     emit('save', updatedDocument)
 
     switch (selectedAction.value) {

@@ -6,14 +6,14 @@ import { Folder, Building, SearchX, Star, FileText, AlertTriangle } from 'lucide
 import { useLoadingBar } from '@/composables/useLoadingBar'
 import { useRouter } from 'vue-router' // Import useRouter
 
+const router = useRouter() // Initialize router
 const departmentStore = useDepartmentStore()
 const documentStore = useDocumentStore()
-const router = useRouter() // Initialize router
 
 const departments = computed(() => departmentStore.departments)
-const searchQuery = ref('') // For filtering departments on this page
+const searchQuery = ref('')
+const filterQuery = ref('') // For filtering departments by file status
 const documentSearchQuery = ref('') // For searching documents across all departments
-
 const isLoading = computed(() => departmentStore.isLoading)
 const { start: startLoading, finish: finishLoading } = useLoadingBar()
 
@@ -29,6 +29,7 @@ const departmentCounts = reactive<
     }
   >
 >({})
+
 
 const filteredDepartments = computed(() => {
   if (!searchQuery.value) return departments.value
@@ -77,9 +78,15 @@ const fetchAllDepartmentCounts = async () => {
 
 // Function to handle document search
 const searchDocuments = () => {
-  if (documentSearchQuery.value.trim()) {
-    router.push({ name: 'SearchResults', query: { q: documentSearchQuery.value.trim() } })
-  }
+  router.push({
+    name: 'SearchResults',
+    query: {
+      ...router.currentRoute.value.query,
+      query: documentSearchQuery.value.trim(),
+      ...(filterQuery.value ? { status: filterQuery.value } : {})
+    }
+  });
+
 }
 
 // Watch for departments to be loaded
@@ -127,18 +134,32 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Search Input for Documents -->
-    <div class="flex items-center gap-3 mb-6">
+    <!-- Search and Filter Section -->
+    <div class="flex flex-col md:flex-row items-center gap-3 mb-6">
+      <!-- File Status Filter (Select) -->
+      <select
+        v-model="filterQuery"
+        class="px-4 py-2 border border-[#103a8e] rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 w-full md:w-auto"
+      >
+        <option value="" disabled>Filter by Status</option>
+        <option value="Filed">Filed</option>
+        <option value="Unfiled">Unfiled</option>
+        <option value="Suspended">Suspended</option>
+      </select>
+
+      <!-- Document Search Input -->
       <input
         type="text"
         v-model="documentSearchQuery"
         placeholder="Search documents across all departments..."
-        class="flex-1 px-4 py-2 border border-[#103a8e] rounded-md focus:outline-none focus:ring-2 focus:ring-[#697b9d]"
+        class="flex-1 px-4 py-2 border border-[#103a8e]  rounded-md focus:outline-none focus:ring-2 focus:ring-[#697b9d] w-full md:w-auto"
         @keyup.enter="searchDocuments"
+
       />
       <button
         @click="searchDocuments"
-        class="bg-[#697b9d] hover:bg-[#5a6b8a] text-white px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#697b9d] focus:ring-offset-2"
+        :disabled="isLoading || !documentSearchQuery.trim()"
+        class="disabled:opacity-50 disabled:cursor-not-allowed bg-[#697b9d] hover:bg-[#5a6b8a] text-white px-4 py-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#697b9d] focus:ring-offset-2 w-full md:w-auto"
       >
         Search Documents
       </button>
@@ -182,7 +203,7 @@ onMounted(() => {
               >
                 <Folder class="w-6 h-6" />
               </div>
-              <h3 class="text-lg font-medium text-[#344054]">{{ department.name }}</h3>
+              <h3 class="text-lg font-medium text-[#344054] ">{{ department.full_name || department.name}}</h3>
             </div>
             <!-- Total Document Count Badge -->
             <div class="flex items-center gap-2 bg-[#f9fafb] px-3 py-1.5 rounded-full border border-[#eaecf0]">
