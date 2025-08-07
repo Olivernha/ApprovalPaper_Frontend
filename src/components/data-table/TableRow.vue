@@ -84,14 +84,14 @@
       <div
         :class="[
           'relative cursor-pointer p-3 rounded-md transition-all duration-200 min-h-10 flex items-center group',
-          isEditing(doc.id ?? '', 'title') ? 'bg-transparent p-0' : '',
+          isEditing(doc.id, 'title') ? 'bg-transparent p-0' : '',
           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : ''
         ]"
-        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id ?? '', 'title')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'title')"
       >
         <textarea
-          v-if="doc.id && editingValues[doc.id]"
-          v-model="editingValues[doc.id].title"
+          v-if="isEditing(doc.id, 'title') "
+          v-model.trim="editingValues[doc.id].title"
           @keyup.enter="saveEdit(doc.id)"
           @blur="cancelEdit(doc.id)"
           @keyup.escape="cancelEdit(doc.id)"
@@ -105,7 +105,7 @@
             isSaving ? 'border-green-500 bg-green-50' : '',
             hasError ? 'border-red-500 bg-red-50' : ''
           ]"
-          :ref="el => setEditInput(el as HTMLElement, doc.id ?? '', 'title')"
+          :ref="el => setEditInput(el, doc.id, 'title')"
           @click.stop
           placeholder="Enter document title..."
         />
@@ -342,7 +342,7 @@ import DocumentDetailsModal from '@/components/form/DocumentDetailsModal.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { useUserStore } from '@/stores/userStore'
-import type { ApiDocument, UpdateDocument } from '@/types/documentTypes'
+import type { ApiDocument } from '@/types/documentTypes'
 import DataStatus from '@/components/data-table/DataStatus.vue'
 import { useToast } from '@/composables/useToast.ts'
 
@@ -401,7 +401,7 @@ const isLatestDocumentByUser = (doc: ApiDocument) => {
   return sortedDocs[0].id === doc.id
 }
 
-const getStatusColor = (status : string) => {
+const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'filed':
       return 'bg-green-500'
@@ -471,8 +471,8 @@ const startEditing = (id: string, field: string) => {
       title: document.title,
       created_by: document.created_by,
       filed_by: document.filed_by,
-      attachment: document?.attachment,
-      file_id: document?.file_id,
+      attachment: document.attachment,
+      file_id: document.file_id,
       status: document.status,
       department_id: document.department_id,
       document_type_id: document.document_type_id,
@@ -494,7 +494,7 @@ const saveEdit = async (id: string) => {
   isSaving.value = true
   hasError.value = false
   try {
-    const updatedData : UpdateDocument= {
+    const updatedData = {
       id,
       ...editingValues.value[id],
     }

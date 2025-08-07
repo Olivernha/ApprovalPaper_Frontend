@@ -10,7 +10,7 @@ interface EditAdminDocumentFormProps {
     created_by: string
     filed_by: string
     created_date: string | Date
-    filed_date: string | Date | null
+    filed_date: string | Date
     attachment?: File | null
     status?: string
     id?: string

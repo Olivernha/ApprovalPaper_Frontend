@@ -115,13 +115,13 @@ export const useDocumentStore = defineStore('documentStore', {
     clearNewDocumentMarkings() {
       this.recentlyAddedDocuments.clear()
     },
-    async fetchSearchResults(query: { search: string, status: string }): Promise<void> {
+    async fetchSearchResults(query: object) {
       this.isLoading = true
       try {
         const response = await api.get(
           import.meta.env.VITE_BACKEND_API_BASE_URL + `/document/search`,
           {
-            params: { search: query?.search ?? '', status: query?.status ?? '' },
+            params: { search: query.search , status: query.status },
           },
         )
         if (response.status !== 200) {
