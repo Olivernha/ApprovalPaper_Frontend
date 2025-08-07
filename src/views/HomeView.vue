@@ -203,7 +203,7 @@ onMounted(() => {
               >
                 <Folder class="w-6 h-6" />
               </div>
-              <h3 class="text-lg font-medium text-[#344054] b">{{ department.full_name ?? department.name }}</h3>
+              <h3 class="text-lg font-medium text-[#344054] b">{{ 'full_name' in department ? department.full_name : department.name }}</h3>
             </div>
             <!-- Total Document Count Badge -->
             <div class="flex items-center gap-2 bg-[#f9fafb] px-3 py-1.5 rounded-full border border-[#eaecf0]">

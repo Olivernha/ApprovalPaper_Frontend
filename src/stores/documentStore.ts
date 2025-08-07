@@ -115,7 +115,7 @@ export const useDocumentStore = defineStore('documentStore', {
     clearNewDocumentMarkings() {
       this.recentlyAddedDocuments.clear()
     },
-    async fetchSearchResults(query: object) {
+    async fetchSearchResults(query: { search: string, status: string }): Promise<void> {
       this.isLoading = true
       try {
         const response = await api.get(
