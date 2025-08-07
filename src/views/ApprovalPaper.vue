@@ -27,7 +27,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="flex-1 py-8 px-6 bg-[#f5f5f5] relative">
+  <main class="flex-1 py-8 px-6 bg-[#f5f5f5]">
     <template v-if="isUserDataLoaded">
       <div class="flex flex-col lg:flex-row gap-2">
         <TableData :dept_id="props.id" />
