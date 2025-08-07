@@ -10,7 +10,7 @@ interface EditAdminDocumentFormProps {
     created_by: string
     filed_by: string
     created_date: string | Date
-    filed_date: string | Date
+    filed_date: string | Date | null
     attachment?: File | null
     status?: string
     id?: string
@@ -107,7 +107,7 @@ watch(
   () => filedDateForInput.value,
   (newDate, oldDate) => {
     if (newDate === oldDate) return
-    editForm.filed_date = newDate ? formatToDate(newDate) : ''
+    editForm.filed_date = newDate ? formatToDate(newDate) : null
   },
   { immediate: true }
 )

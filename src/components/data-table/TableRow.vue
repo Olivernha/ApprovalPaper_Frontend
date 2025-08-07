@@ -87,7 +87,7 @@
           isEditing(doc.id ?? '', 'title') ? 'bg-transparent p-0' : '',
           userStore.userData?.isAdmin ? 'hover:bg-gray-100 hover:shadow-sm group' : ''
         ]"
-        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id, 'title')"
+        @dblclick="userStore.userData?.isAdmin && startEditing(doc.id ?? '', 'title')"
       >
         <textarea
           v-if="doc.id && editingValues[doc.id]"
@@ -141,7 +141,7 @@
       >
          <textarea
            v-if="isEditing(doc.id, 'created_by') "
-           v-model.trim="editingValues[doc.id].created_by"
+           v-model.trim="editingValues[doc.id ?? '']?.created_by"
            @keyup.enter="saveEdit(doc.id)"
            @blur="cancelEdit(doc.id)"
            @keyup.escape="cancelEdit(doc.id)"
@@ -342,7 +342,7 @@ import DocumentDetailsModal from '@/components/form/DocumentDetailsModal.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { useUserStore } from '@/stores/userStore'
-import type { ApiDocument } from '@/types/documentTypes'
+import type { ApiDocument, UpdateDocument } from '@/types/documentTypes'
 import DataStatus from '@/components/data-table/DataStatus.vue'
 import { useToast } from '@/composables/useToast.ts'
 
@@ -494,7 +494,7 @@ const saveEdit = async (id: string) => {
   isSaving.value = true
   hasError.value = false
   try {
-    const updatedData = {
+    const updatedData : UpdateDocument= {
       id,
       ...editingValues.value[id],
     }
