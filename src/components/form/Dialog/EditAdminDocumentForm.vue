@@ -107,7 +107,7 @@ watch(
   () => filedDateForInput.value,
   (newDate, oldDate) => {
     if (newDate === oldDate) return
-    editForm.filed_date = newDate ? formatToDate(newDate) : null
+    editForm.filed_date = newDate ? formatToDate(newDate) : ''
   },
   { immediate: true }
 )
