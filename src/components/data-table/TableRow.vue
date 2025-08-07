@@ -285,14 +285,14 @@
         v-if="username === doc.created_by || userStore.userData?.isAdmin"
         :disabled="documentStore.isLoading"
         @click="toggleDropdown(index)"
-        class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
+        class="relative text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-1 rounded hover:bg-gray-100"
       >
         <MoreVerticalIcon class="h-4 w-4" />
       </button>
       <div
         v-if="activeDropdown === index"
         :class="[
-          'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-100 min-w-[160px] right-0',
+          'absolute bg-white border border-[#eaecf0] rounded-lg shadow-lg py-1 z-100 min-w-[160px] right-3',
           shouldDropdownOpenUpward(index) ? 'bottom-2 mb-1' : 'top-[-5] mt-1',
         ]"
       >
