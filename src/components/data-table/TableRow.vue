@@ -141,7 +141,7 @@
       >
          <textarea
            v-if="isEditing(doc.id, 'created_by') "
-           v-model.trim="editingValues[doc.id ?? '']?.created_by"
+           v-model.trim="editingValues[doc.id]?.created_by"
            @keyup.enter="saveEdit(doc.id)"
            @blur="cancelEdit(doc.id)"
            @keyup.escape="cancelEdit(doc.id)"
